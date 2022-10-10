@@ -1,6 +1,16 @@
+fint:
+  application-id: fint-flyt-file-service
+  cache:
+    defaultCacheEntryTimeToLiveMillis: 600000
+    defaultCacheHeapSize: 1000000
+server:
+  error:
+    include-message: always
 spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://idp.felleskomponent.no/nidp/oauth/nam
+  profiles:
+    include:
+      - flyt-kafka
+      - flyt-logging
+      - flyt-resource-server
+  codec:
+    max-in-memory-size: 100MB
