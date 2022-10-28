@@ -5,6 +5,13 @@ metadata:
 spec:
   itemPath: "vaults/aks-alpha-vault/items/aiven-kafka"
 ---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: viken-no-fint-flyt-file-service
+spec:
+  itemPath: "vaults/aks-alpha-vault/items/viken-no-fint-flyt-file-service"
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -86,10 +93,12 @@ spec:
           envFrom:
             - secretRef:
                 name: aiven-kafka
+            - secretRef:
+                name: viken-no-fint-flyt-file-service
           env:
             - { name: TZ, value: Europe/Oslo }
             - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M' }
             - { name: fint.org-id, value: 'viken.no' }
             - { name: spring.datasource.hikari.schema, value: 'viken_no' }
             - { name: fint.flyt.resource-server.security.api.internal.enabled, value: 'true' }
-            - { name: fint.flyt.resource-server.security.api.internal.authorized-client-ids, value: '1' }
+            - { name: fint.flyt.resource-server.security.api.internal.authorized-org-ids, value: 'viken.no, vigo.no' }
