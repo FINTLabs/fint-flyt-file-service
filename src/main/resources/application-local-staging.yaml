@@ -4,9 +4,9 @@ fint:
     resource-server:
       security:
         api:
-          internal:
+          internal-client:
             enabled: true
-            authorized-org-ids: 'viken.no, vigo.no'
+            authorized-client-ids:
   kafka:
     default-replicas: 1
 spring:

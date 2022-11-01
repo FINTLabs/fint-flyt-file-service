@@ -11,11 +11,11 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import java.util.UUID;
 
-import static no.fintlabs.resourceserver.UrlPaths.INTERNAL_API;
+import static no.fintlabs.resourceserver.UrlPaths.INTERNAL_CLIENT_API;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(INTERNAL_API + "/filer")
+@RequestMapping(INTERNAL_CLIENT_API + "/filer")
 public class FileController {
 
     private final FintCache<UUID, File> fileCache;
