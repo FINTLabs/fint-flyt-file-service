@@ -1,4 +1,4 @@
-package no.fintlabs.file;
+package no.fintlabs;
 
 import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobAsyncClient;
@@ -6,8 +6,10 @@ import com.azure.storage.blob.BlobContainerAsyncClient;
 import com.azure.storage.blob.BlobServiceAsyncClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.*;
+import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
+import no.fintlabs.model.File;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -28,16 +30,13 @@ public class FileRepository {
     @Value("${fint.flyt.internal-files.container-name}")
     private String containerName;
 
-    private BlobServiceAsyncClient blobServiceAsyncClient;
     private BlobContainerAsyncClient blobContainerAsyncClient;
 
-    private BlobRequestConditions requestConditions;
-    private long blockSize = 2L * 1024L * 1024L;
+    private final long blockSize = 2L * 1024L * 1024L;
 
     @PostConstruct
     public void init() {
-        log.info("test" + connectionString.toString());
-        blobServiceAsyncClient = new BlobServiceClientBuilder()
+        BlobServiceAsyncClient blobServiceAsyncClient = new BlobServiceClientBuilder()
                 .connectionString(connectionString)
                 .buildAsyncClient();
         blobContainerAsyncClient = blobServiceAsyncClient
@@ -50,10 +49,10 @@ public class FileRepository {
     }
 
     public Mono<UUID> putFile(UUID fileId, File file) {
+
         BlobAsyncClient blobAsyncClient = blobContainerAsyncClient.getBlobAsyncClient(fileId.toString());
 
         Flux<ByteBuffer> data = Flux.just(ByteBuffer.wrap(file.getContents()));
-        ParallelTransferOptions parallelTransferOptions = new ParallelTransferOptions().setBlockSizeLong(blockSize);
 
         Map<String, String> metadata = ImmutableMap.<String, String>builder()
                 .put("name", file.getName())
@@ -61,26 +60,44 @@ public class FileRepository {
                 .put("encoding", file.getEncoding())
                 .build();
 
-        BlobHttpHeaders blobHttpHeaders = new BlobHttpHeaders();
+        Map<String, String> tags = ImmutableMap.<String, String>builder()
+                .put("sourceApplicationId", String.valueOf(file.getSourceApplicationId()))
+                .put("sourceApplicationInstanceId", file.getSourceApplicationInstanceId())
+                .build();
 
         return blobAsyncClient
-                .uploadWithResponse(data, parallelTransferOptions, blobHttpHeaders, metadata, AccessTier.HOT, requestConditions)
+                .uploadWithResponse(
+                        new BlobParallelUploadOptions(data)
+                                .setParallelTransferOptions(new ParallelTransferOptions().setBlockSizeLong(blockSize))
+                                .setHeaders(new BlobHttpHeaders())
+                                .setMetadata(metadata)
+                                .setTags(tags)
+                                .setTier(AccessTier.HOT)
+                )
                 .map(response -> fileId)
                 .doOnNext(response -> logSuccessfulAction(fileId, file.getName(), "uploaded"));
     }
 
-    public Mono<File> getFile(UUID fileId) {
+    public Mono<File> findById(UUID fileId) {
         BlobAsyncClient blobAsyncClient = blobContainerAsyncClient.getBlobAsyncClient(fileId.toString());
         DownloadRetryOptions options = new DownloadRetryOptions().setMaxRetryRequests(3);
 
         return blobAsyncClient
-                .downloadContentWithResponse(options, requestConditions)
+                .downloadContentWithResponse(options, new BlobRequestConditions())
+                .<BlobDownloadContentAsyncResponse>handle((response, sink) -> {
+                    if (response.getStatusCode() == 200) {
+                        sink.next(response);
+                    } else {
+                        sink.error(new RuntimeException("Received response that was not 200 OK: " + response));
+                    }
+                })
                 .map(this::mapToFile)
-                .doOnNext(file -> logSuccessfulAction(fileId, file.getName(), "downloaded"));
+                .doOnNext(file -> logSuccessfulAction(fileId, file.getName(), "downloaded"))
+                .doOnError(e -> log.error("Could not download file", e));
     }
 
     private void logSuccessfulAction(UUID fileId, String fileName, String performedAction) {
-        log.info("Successfully " + performedAction + " File{fileId=" + fileId + ", name=" + fileName + "} in Azure Blob Storage");
+        log.info("Successfully " + performedAction + " File{fileId=" + fileId + ", name=" + fileName + "} to Azure Blob Storage");
     }
 
     private File mapToFile(BlobDownloadContentAsyncResponse blobDownloadContentAsyncResponse) {

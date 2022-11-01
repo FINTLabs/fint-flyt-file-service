@@ -1,8 +1,6 @@
-package no.fintlabs;
+package no.fintlabs.cache;
 
-import no.fintlabs.cache.FintCache;
-import no.fintlabs.cache.FintCacheManager;
-import no.fintlabs.file.File;
+import no.fintlabs.model.File;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
