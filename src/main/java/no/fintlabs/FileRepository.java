@@ -108,17 +108,17 @@ public class FileRepository {
                 .map(blobContainerAsyncClient::getBlobAsyncClient)
                 .doOnNext(BlobAsyncClient::delete)
                 .doOnError(e -> log.error(
-                        "Could not delete file with tags" +
-                                " sourceApplicationId=" + sourceApplicationId +
-                                " sourceApplicationInstanceId=" + sourceApplicationInstanceId,
+                        generateDeleteBlobText(sourceApplicationId, sourceApplicationInstanceId, "Could not delete file"),
                         e
                 ))
                 .then()
-                .doOnSuccess(v -> log.info(
-                        "Deleted files with tags" +
-                                " sourceApplicationId=" + sourceApplicationId +
-                                " sourceApplicationInstanceId=" + sourceApplicationInstanceId
-                ));
+                .doOnSuccess(v -> log.info(generateDeleteBlobText(sourceApplicationId, sourceApplicationInstanceId, "Deleted files")));
+    }
+
+    private String generateDeleteBlobText(Long sourceApplicationId, String sourceApplicationInstanceId, String event) {
+        return event + " with tags" +
+                " sourceApplicationId=" + sourceApplicationId +
+                " sourceApplicationInstanceId=" + sourceApplicationInstanceId;
     }
 
     private void logSuccessfulAction(UUID fileId, String fileName, String performedAction) {
