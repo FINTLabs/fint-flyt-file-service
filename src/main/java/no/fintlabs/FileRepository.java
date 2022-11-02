@@ -7,6 +7,7 @@ import com.azure.storage.blob.BlobServiceAsyncClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.*;
 import com.azure.storage.blob.options.BlobParallelUploadOptions;
+import com.azure.storage.blob.options.FindBlobsOptions;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.model.File;
@@ -96,8 +97,32 @@ public class FileRepository {
                 .doOnError(e -> log.error("Could not download file", e));
     }
 
+    public Mono<Void> deleteByTags(Long sourceApplicationId, String sourceApplicationInstanceId) {
+        String searchExpression = String.format(
+                "\"sourceApplicationId\"='%s'And\"sourceApplicationInstanceId\"='%s'",
+                sourceApplicationId, sourceApplicationInstanceId
+        );
+        return blobContainerAsyncClient
+                .findBlobsByTags(new FindBlobsOptions(searchExpression))
+                .map(TaggedBlobItem::getName)
+                .map(blobContainerAsyncClient::getBlobAsyncClient)
+                .doOnNext(BlobAsyncClient::delete)
+                .doOnError(e -> log.error(
+                        "Could not delete file with tags" +
+                                " sourceApplicationId=" + sourceApplicationId +
+                                " sourceApplicationInstanceId=" + sourceApplicationInstanceId,
+                        e
+                ))
+                .then()
+                .doOnSuccess(v -> log.info(
+                        "Deleted files with tags" +
+                                " sourceApplicationId=" + sourceApplicationId +
+                                " sourceApplicationInstanceId=" + sourceApplicationInstanceId
+                ));
+    }
+
     private void logSuccessfulAction(UUID fileId, String fileName, String performedAction) {
-        log.info("Successfully " + performedAction + " File{fileId=" + fileId + ", name=" + fileName + "} to Azure Blob Storage");
+        log.info("Successfully " + performedAction + " File{fileId=" + fileId + ", name=" + fileName + "} in Azure Blob Storage");
     }
 
     private File mapToFile(BlobDownloadContentAsyncResponse blobDownloadContentAsyncResponse) {
