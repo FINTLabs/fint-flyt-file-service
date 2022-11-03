@@ -5,12 +5,32 @@ metadata:
 spec:
   itemPath: "vaults/aks-alpha-vault/items/aiven-kafka"
 ---
-apiVersion: onepassword.com/v1
-kind: OnePasswordItem
+apiVersion: "fintlabs.no/v1alpha1"
+kind: NamOAuthClientApplicationResource
 metadata:
-  name: viken-no-fint-flyt-file-service
+  name: oauth2-client-flyt-file-service
+  labels:
+    app.kubernetes.io/name: oauth2-client-flyt-file-service
+    app.kubernetes.io/instance: viken-no-oauth2-client-flyt-file-service
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: oauth-client
+    app.kubernetes.io/part-of: fint-flyt
+    fintlabs.no/team: flyt
 spec:
-  itemPath: "vaults/aks-alpha-vault/items/viken-no-fint-flyt-file-service"
+  grantTypes:
+    - client_credentials
+---
+apiVersion: fintlabs.no/v1alpha1
+kind: AzureBlobContainer
+metadata:
+  name: azure-blob-storage-flyt-file-service
+  labels:
+    app.kubernetes.io/name: azure-blob-storage-flyt-file-service
+    app.kubernetes.io/instance: viken-no-azure-blob-storage-flyt-file-service
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: azure-blob-storage
+    app.kubernetes.io/part-of: fint-flyt
+    fintlabs.no/team: flyt
 ---
 apiVersion: v1
 kind: Service
@@ -94,10 +114,10 @@ spec:
             - secretRef:
                 name: aiven-kafka
             - secretRef:
-                name: viken-no-fint-flyt-file-service
+                name: oauth2-client-flyt-file-service
+            - secretRef:
+                name: azure-blob-storage-flyt-file-service
           env:
             - { name: TZ, value: Europe/Oslo }
             - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M' }
             - { name: fint.org-id, value: 'viken.no' }
-            - { name: fint.flyt.resource-server.security.api.internal.enabled, value: 'true' }
-            - { name: fint.flyt.resource-server.security.api.internal.authorized-org-ids, value: 'viken.no, vigo.no' }

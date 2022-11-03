@@ -98,16 +98,18 @@ public class FileRepository {
     }
 
     public Mono<Void> deleteByTags(Long sourceApplicationId, String sourceApplicationInstanceId) {
-        String searchExpression = String.format(
-                "\"sourceApplicationId\"='%s'And\"sourceApplicationInstanceId\"='%s'",
-                sourceApplicationId, sourceApplicationInstanceId
-        );
         return blobContainerAsyncClient
-                .findBlobsByTags(new FindBlobsOptions(searchExpression))
+                .findBlobsByTags(new FindBlobsOptions(String.format(
+                        "\"sourceApplicationId\"='%s'And\"sourceApplicationInstanceId\"='%s'",
+                        sourceApplicationId, sourceApplicationInstanceId
+                )))
                 .map(TaggedBlobItem::getName)
                 .map(blobContainerAsyncClient::getBlobAsyncClient)
-                .doOnNext(BlobAsyncClient::delete)
+                .flatMap(blobAsyncClient -> blobAsyncClient
+                        .deleteIfExistsWithResponse(DeleteSnapshotsOptionType.INCLUDE, null)
+                )
                 .doOnError(e -> log.error(
+
                         generateDeleteBlobText(sourceApplicationId, sourceApplicationInstanceId, "Could not delete file"),
                         e
                 ))

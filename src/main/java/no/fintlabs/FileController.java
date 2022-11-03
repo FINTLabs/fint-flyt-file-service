@@ -34,11 +34,11 @@ public class FileController {
 
     @PostMapping
     public Mono<ResponseEntity<UUID>> addFile(
-            @RequestBody @Valid Mono<File> fileRequestMono
+            @RequestBody @Valid Mono<File> file
     ) {
         return Mono.zip(
                         Mono.just(UUID.randomUUID()),
-                        fileRequestMono
+                        file
                 )
                 .doOnNext(tuple -> fileCache.put(tuple.getT1(), tuple.getT2()))
                 .flatMap(tuple -> fileRepository.putFile(tuple.getT1(), tuple.getT2()).then(Mono.just(tuple)))
