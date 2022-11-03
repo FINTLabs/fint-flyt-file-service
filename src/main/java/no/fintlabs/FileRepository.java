@@ -25,10 +25,10 @@ import java.util.UUID;
 @Slf4j
 public class FileRepository {
 
-    @Value("${fint.flyt.internal-files.connection-string}")
+    @Value("${fint.azure.storage-account.connection-string}")
     private String connectionString;
 
-    @Value("${fint.flyt.internal-files.container-name}")
+    @Value("${fint.azure.storage.container-blob.name}")
     private String containerName;
 
     private BlobContainerAsyncClient blobContainerAsyncClient;
