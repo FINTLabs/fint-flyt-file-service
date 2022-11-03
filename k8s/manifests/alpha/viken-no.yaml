@@ -23,10 +23,10 @@ spec:
 apiVersion: fintlabs.no/v1alpha1
 kind: AzureBlobContainer
 metadata:
-  name: azure-blob-storage-flyt-file-service
+  name: abs-flyt-file-service
   labels:
-    app.kubernetes.io/name: azure-blob-storage-flyt-file-service
-    app.kubernetes.io/instance: viken-no-azure-blob-storage-flyt-file-service
+    app.kubernetes.io/name: flyt-file-service
+    app.kubernetes.io/instance: viken-no-flyt-file-service
     app.kubernetes.io/version: latest
     app.kubernetes.io/component: azure-blob-storage
     app.kubernetes.io/part-of: fint-flyt
@@ -116,7 +116,7 @@ spec:
             - secretRef:
                 name: oauth2-client-flyt-file-service
             - secretRef:
-                name: azure-blob-storage-flyt-file-service
+                name: abs-flyt-file-service
           env:
             - { name: TZ, value: Europe/Oslo }
             - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M' }
