@@ -1,11 +1,11 @@
 fint:
   flyt:
-      resource-server:
-        security:
-          api:
-            internal-client:
-              enabled: true
-              authorized-client-ids: ${fint.sso.client.id}
+    resource-server:
+      security:
+        api:
+          internal-client:
+            enabled: true
+            authorized-client-ids: ${fint.sso.client-id}
   application-id: fint-flyt-file-service
   cache:
     defaultCacheEntryTimeToLiveMillis: 600000
