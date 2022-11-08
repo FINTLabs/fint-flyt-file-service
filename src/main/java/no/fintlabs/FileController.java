@@ -22,7 +22,7 @@ public class FileController {
     private final FileRepository fileRepository;
 
     @GetMapping("{fileId}")
-    public Mono<ResponseEntity<File>> file(
+    public Mono<ResponseEntity<File>> getFile(
             @PathVariable UUID fileId
     ) {
         return
@@ -41,9 +41,8 @@ public class FileController {
                         file
                 )
                 .doOnNext(tuple -> fileCache.put(tuple.getT1(), tuple.getT2()))
-                .flatMap(tuple -> fileRepository.putFile(tuple.getT1(), tuple.getT2()).then(Mono.just(tuple)))
-                .map(tuple -> ResponseEntity.status(HttpStatus.CREATED).body(tuple.getT1()));
+                .flatMap(tuple -> fileRepository.putFile(tuple.getT1(), tuple.getT2()))
+                .map(id -> ResponseEntity.status(HttpStatus.CREATED).body(id));
     }
-
 
 }
