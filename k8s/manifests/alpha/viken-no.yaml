@@ -31,6 +31,7 @@ metadata:
     app.kubernetes.io/component: azure-blob-storage
     app.kubernetes.io/part-of: fint-flyt
     fintlabs.no/team: flyt
+    fintlabs.no/org-id: viken.no
 ---
 apiVersion: v1
 kind: Service
