@@ -57,7 +57,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`viken-no-skjema.vigoiks.no`) && PathPrefix(`/api/intern-klient/filer`)
+    - match: Host(`vlfk-no-skjema.vigoiks.no`) && PathPrefix(`/api/intern-klient/filer`)
       kind: Rule
       services:
         - name: fint-flyt-file-service
@@ -113,3 +113,4 @@ spec:
             - { name: TZ, value: Europe/Oslo }
             - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M' }
             - { name: fint.org-id, value: 'viken.no' }
+            - { name: spring.webflux.base-path, value: 'vlfk-no' }
