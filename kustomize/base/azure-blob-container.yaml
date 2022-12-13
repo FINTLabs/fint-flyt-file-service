@@ -1,4 +1,4 @@
 apiVersion: fintlabs.no/v1alpha1
 kind: AzureBlobContainer
 metadata:
-  name: fint-flyt-file-service-azureblobstorage
+  name: fint-flyt-file-service
