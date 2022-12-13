@@ -31,5 +31,7 @@ spec:
           envFrom:
             - secretRef:
                 name: fint-flyt-file-service-kafka
+            - secretRef:
+                name: fint-flyt-file-service
             - configMapRef:
                 name: fint-flyt-file-service
