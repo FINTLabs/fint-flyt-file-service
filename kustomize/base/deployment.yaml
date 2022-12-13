@@ -32,6 +32,6 @@ spec:
             - secretRef:
                 name: fint-flyt-file-service-kafka
             - secretRef:
-                name: fint-flyt-file-service
+                name: fint-flyt-file-service-azure-blob-storage
             - configMapRef:
                 name: fint-flyt-file-service
