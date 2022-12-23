@@ -5,5 +5,5 @@ metadata:
 data:
   TZ: 'Europe/Oslo'
   JAVA_TOOL_OPTIONS: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
-  fint.org-id: 'viken.test'
-  spring.webflux.base-path: 'alpha/viken-test'
+  fint.org-id: 'viken.no'
+  spring.webflux.base-path: 'alpha/viken-no'
