@@ -16,13 +16,6 @@ commonLabels:
 patches:
   - patch: |-
       - op: replace
-        path: "/spec/routes/0/match"
-        value: "Host(`flyt.vigoiks.no`) && PathPrefix(`/alpha/vlfk-no/api/intern-klient/filer`)"
-    target:
-      kind: IngressRoute
-      name: fint-flyt-file-service
-  - patch: |-
-      - op: replace
         path: "/spec/acls/0/topic"
         value: "vlfk-no.flyt.*"
     target:
