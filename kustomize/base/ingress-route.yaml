@@ -11,5 +11,3 @@ spec:
       services:
         - name: fint-flyt-file-service
           port: 8080
-      middlewares:
-        - name: fint-flyt-auth-forward
