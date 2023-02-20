@@ -1,6 +1,7 @@
 package no.fintlabs;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.cache.FintCache;
 import no.fintlabs.model.File;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import static no.fintlabs.resourceserver.UrlPaths.INTERNAL_CLIENT_API;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(INTERNAL_CLIENT_API + "/filer")
+@Slf4j
 public class FileController {
 
     private final FintCache<UUID, File> fileCache;
@@ -42,6 +44,7 @@ public class FileController {
                 )
                 .doOnNext(tuple -> fileCache.put(tuple.getT1(), tuple.getT2()))
                 .flatMap(tuple -> fileRepository.putFile(tuple.getT1(), tuple.getT2()))
+                .doOnError(e -> log.error(String.valueOf(e)))
                 .map(id -> ResponseEntity.status(HttpStatus.CREATED).body(id));
     }
 

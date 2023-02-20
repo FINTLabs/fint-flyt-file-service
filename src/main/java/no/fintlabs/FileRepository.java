@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.model.File;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -57,7 +58,7 @@ public class FileRepository {
 
         Map<String, String> metadata = ImmutableMap.<String, String>builder()
                 .put("name", file.getName())
-                .put("type", file.getType())
+                .put("type", String.valueOf(file.getType()))
                 .put("encoding", file.getEncoding())
                 .build();
 
@@ -132,7 +133,7 @@ public class FileRepository {
         BinaryData value = blobDownloadContentAsyncResponse.getValue();
         return File.builder()
                 .name(metadata.get("name"))
-                .type(metadata.get("type"))
+                .type(MediaType.valueOf(metadata.get("type")))
                 .encoding(metadata.get("encoding"))
                 .contents(value.toBytes())
                 .build();
