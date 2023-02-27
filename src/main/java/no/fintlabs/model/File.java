@@ -1,11 +1,13 @@
 package no.fintlabs.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import no.fintlabs.Base64Deserializer;
 import org.springframework.http.MediaType;
 
 import javax.validation.constraints.NotBlank;
@@ -33,6 +35,7 @@ public class File {
     private String encoding;
 
     @NotEmpty
+    @JsonDeserialize(using = Base64Deserializer.class)
     private byte[] contents;
 
 }
