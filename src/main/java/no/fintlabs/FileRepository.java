@@ -78,7 +78,7 @@ public class FileRepository {
                                 .setTier(AccessTier.HOT)
                 )
                 .map(response -> fileId)
-                .doOnNext(response -> logSuccessfulAction(fileId, file.getName(), "uploaded"));
+                .doOnNext(response -> logSuccessfulAction(fileId, StringEscapeUtils.escapeHtml4(file.getName()), "uploaded"));
     }
 
     public Mono<File> findById(UUID fileId) {
@@ -95,7 +95,7 @@ public class FileRepository {
                     }
                 })
                 .map(this::mapToFile)
-                .doOnNext(file -> logSuccessfulAction(fileId, file.getName(), "downloaded"))
+                .doOnNext(file -> logSuccessfulAction(fileId, StringEscapeUtils.unescapeHtml4(file.getName()), "downloaded"))
                 .doOnError(e -> log.error("Could not download file", e));
     }
 
@@ -133,7 +133,7 @@ public class FileRepository {
         Map<String, String> metadata = blobDownloadContentAsyncResponse.getDeserializedHeaders().getMetadata();
         BinaryData value = blobDownloadContentAsyncResponse.getValue();
         return File.builder()
-                .name(metadata.get("name"))
+                .name(StringEscapeUtils.unescapeHtml4(metadata.get("name")))
                 .type(MediaType.valueOf(metadata.get("type")))
                 .encoding(metadata.get("encoding"))
                 .contents(value.toBytes())
