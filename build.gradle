@@ -51,6 +51,8 @@ dependencies {
 
     implementation 'com.azure:azure-storage-blob:12.20.0'
 
+    implementation 'org.apache.commons:commons-text:1.10.0'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'

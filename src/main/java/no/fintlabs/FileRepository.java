@@ -11,6 +11,7 @@ import com.azure.storage.blob.options.FindBlobsOptions;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.model.File;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
@@ -57,7 +58,7 @@ public class FileRepository {
         Flux<ByteBuffer> data = Flux.just(ByteBuffer.wrap(file.getContents()));
 
         Map<String, String> metadata = ImmutableMap.<String, String>builder()
-                .put("name", file.getName())
+                .put("name", StringEscapeUtils.escapeHtml4(file.getName()))
                 .put("type", String.valueOf(file.getType()))
                 .put("encoding", file.getEncoding())
                 .build();
