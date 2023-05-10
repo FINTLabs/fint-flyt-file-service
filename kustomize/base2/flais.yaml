@@ -16,6 +16,11 @@ spec:
   env:
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
+  envFrom:
+    - secretRef:
+        name: fint-flyt-file-service-azure-blob-storage
+    - secretRef:
+        name: fint-flyt-file-oauth2-client
   resources:
     limits:
       memory: "2048Mi"
