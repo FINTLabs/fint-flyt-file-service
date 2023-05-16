@@ -2,3 +2,11 @@ apiVersion: fintlabs.no/v1alpha1
 kind: AzureBlobContainer
 metadata:
   name: fint-flyt-file-service-azure-blob-storage
+  labels:
+    app.kubernetes.io/name: fint-flyt-file-service-azure-blob-storage
+    app.kubernetes.io/instance: fint-flyt-file-service-azure-blob-storage_fintlabs_no
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: fint-flyt
+    fintlabs.no/team: flyt
+    fintlabs.no/org-id: fintlabs.no

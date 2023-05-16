@@ -23,3 +23,14 @@ patches:
       kind: Application
       name: fint-flyt-file-service
 
+  - patch: |-
+      - op: replace
+        path: "/metadata/labels/app.kubernetes.io~1instance"
+        value: "fint-flyt-file-service-azure-blob-storage_vlfk_no"
+      - op: replace
+        path: "/metadata/labels/fintlabs.no~1org-id"
+        value: "vlfk.no"
+    target:
+      kind: AzureBlobContainer
+      name: fint-flyt-file-service-azure-blob-storage
+
