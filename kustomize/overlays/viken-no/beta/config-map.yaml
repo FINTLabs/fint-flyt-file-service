@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: fint-flyt-file-service
-data:
-  fint.org-id: 'viken.no'

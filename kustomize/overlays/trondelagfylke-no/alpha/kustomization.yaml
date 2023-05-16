@@ -3,14 +3,16 @@ kind: Kustomization
 namespace: trondelagfylke-no
 
 resources:
-  - ../../../base2
-
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-file-service_trondelagfylke_no
-  fintlabs.no/org-id: trondelagfylke.no
+  - ../../../base
 
 patches:
   - patch: |-
+      - op: replace
+        path: "/metadata/labels/app.kubernetes.io~1instance"
+        value: "fint-flyt-file-service_trondelagfylke-no"
+      - op: replace
+        path: "/metadata/labels/fintlabs.no~1org-id"
+        value: "trondelagfylke.no"
       - op: replace
         path: "/spec/kafka/acls/0/topic"
         value: "trondelagfylke-no.flyt.*"
