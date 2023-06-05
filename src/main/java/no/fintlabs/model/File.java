@@ -3,10 +3,8 @@ package no.fintlabs.model;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 import no.fintlabs.Base64Deserializer;
 import org.springframework.http.MediaType;
 
@@ -14,10 +12,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-@Data
+@Getter
+@EqualsAndHashCode
+@Jacksonized
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class File {
 
     @NotBlank
