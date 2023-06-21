@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: fintlabs-no
+
+resources:
+  - ../../../base
+
+patches:
+  - patch: |-
+      - op: replace
+        path: "/metadata/labels/app.kubernetes.io~1instance"
+        value: "fint-flyt-file-service_fintlabs-no"
+      - op: replace
+        path: "/metadata/labels/fintlabs.no~1org-id"
+        value: "fintlabs.no"
+      - op: replace
+        path: "/spec/kafka/acls/0/topic"
+        value: "fintlabs-no.flyt.*"
+      - op: replace
+        path: "/spec/orgId"
+        value: "fintlabs.no"
+    target:
+      kind: Application
+      name: fint-flyt-file-service
+
+  - patch: |-
+      - op: replace
+        path: "/metadata/labels/app.kubernetes.io~1instance"
+        value: "fint-flyt-file-service-azure-blob-storage_fintlabs_no"
+      - op: replace
+        path: "/metadata/labels/fintlabs.no~1org-id"
+        value: "fintlabs.no"
+    target:
+      kind: AzureBlobContainer
+      name: fint-flyt-file-service-azure-blob-storage
+
