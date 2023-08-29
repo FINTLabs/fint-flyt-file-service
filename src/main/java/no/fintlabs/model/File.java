@@ -36,4 +36,9 @@ public class File {
     @JsonDeserialize(using = Base64Deserializer.class)
     private byte[] contents;
 
+    @Override
+    public String toString() {
+        return "Sensitive data omitted";
+    }
+
 }
