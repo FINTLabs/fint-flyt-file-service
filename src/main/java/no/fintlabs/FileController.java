@@ -20,10 +20,9 @@ import static no.fintlabs.resourceserver.UrlPaths.INTERNAL_CLIENT_API;
 public class FileController {
 
     private final FileService fileService;
-    private final FileRepository fileRepository;
 
     @GetMapping("{fileId}")
-    public Mono<ResponseEntity<File>> getFile(
+    public Mono<ResponseEntity<File>> get(
             @PathVariable UUID fileId
     ) {
         return fileService.findById(fileId)
@@ -32,33 +31,27 @@ public class FileController {
                         .orElse(ResponseEntity.notFound().build())
                 )
                 .onErrorResume(
-                        throwable -> Mono.just(ResponseEntity.internalServerError().build())
+                        throwable -> {
+                            log.error("Could not get file", throwable);
+                            return Mono.just(ResponseEntity.internalServerError().build());
+                        }
                 );
     }
 
-//    @PostMapping
-//    public Mono<ResponseEntity<UUID>> addFile(
-//            @RequestBody @Valid Mono<File> file
-//    ) {
-//        return Mono.zip(
-//                        Mono.just(UUID.randomUUID()),
-//                        file
-//                )
-//                .doOnNext(tuple -> fileService.putFile(tuple.getT1(), tuple.getT2()))
-//                .flatMap(tuple -> fileRepository.putFile(tuple.getT1(), tuple.getT2()))
-//                .doOnError(e -> log.error(String.valueOf(e)))
-//                .map(id -> ResponseEntity.status(HttpStatus.CREATED).body(id));
-//    }
-
     @PostMapping
-    public Mono<ResponseEntity<UUID>> addFile(
+    public Mono<ResponseEntity<UUID>> post(
             @RequestBody @Valid Mono<File> file
     ) {
         return file.flatMap(f -> {
             UUID fileId = UUID.randomUUID();
-            return fileService.putFile(fileId, f)
+            return fileService.put(fileId, f)
                     .map(id -> ResponseEntity.status(HttpStatus.CREATED).body(id));
-        }).doOnError(e -> log.error(String.valueOf(e)));
+        }).onErrorResume(
+                throwable -> {
+                    log.error("Could not create file", throwable);
+                    return Mono.just(ResponseEntity.internalServerError().build());
+                }
+        );
     }
 
 }

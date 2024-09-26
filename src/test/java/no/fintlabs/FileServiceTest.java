@@ -1,5 +1,6 @@
 package no.fintlabs;
 
+import com.google.common.collect.ImmutableList;
 import no.fintlabs.cache.FintCache;
 import no.fintlabs.model.File;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,10 +8,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,20 +31,18 @@ public class FileServiceTest {
     private File file;
 
     private UUID fileId;
+    private ImmutableList<UUID> fileIds;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        file = File.builder()
-                .name("testFile.txt")
-                .sourceApplicationId(123L)
-                .sourceApplicationInstanceId("instance_001")
-                .type(MediaType.TEXT_PLAIN)
-                .encoding("UTF-8")
-                .contents("sample-content".getBytes())
-                .build();
-
-        fileId = UUID.randomUUID();
+        file = mock(File.class);
+        fileId = UUID.fromString("c4f18f8e-3187-462b-80ea-70f77d00d5b5");
+        fileIds = ImmutableList.of(
+                UUID.fromString("d197a1fb-7c4f-4ab0-8f38-df32c6c34ed9"),
+                UUID.fromString("0c56141b-d8f0-4988-9d09-61bcc4fbbb29"),
+                UUID.fromString("201eb809-3acb-4dae-9433-019cd6bf49fe")
+        );
     }
 
     @Test
@@ -127,48 +126,171 @@ public class FileServiceTest {
         verifyNoMoreInteractions(fileRepository);
     }
 
+    @Test
+    void givenFileIdAndFileWhenPutFileShouldPutInCacheAndRepository() {
+        when(fileRepository.putFile(fileId, file)).thenReturn(Mono.just(fileId));
 
-//
-//    @Test
-//    void testAddFile() {
-//        when(fileRepository.putFile(any(UUID.class), eq(file))).thenReturn(Mono.just(fileId));
-//
-//        Mono<ResponseEntity<UUID>> resultMono = fileController.addFile(Mono.just(file));
-//
-//        StepVerifier.create(resultMono)
-//                .expectNextMatches(response ->
-//                        response.getStatusCode().equals(HttpStatus.CREATED) && response.getBody() != null)
-//                .verifyComplete();
-//
-//        verify(fileCache).put(any(UUID.class), eq(file));
-//    }
-//
-//    @Test
-//    public void testAddFile_InvalidInput() {
-//        File invalidFile = File.builder().build();
-//
-//        Mono<ResponseEntity<UUID>> resultMono = fileController.addFile(Mono.just(invalidFile));
-//
-//        StepVerifier.create(resultMono)
-//                .expectErrorMatches(throwable ->
-//                        throwable instanceof RuntimeException)
-//                .verify();
-//    }
-//
-//    @Test
-//    public void testAddFile_RepositoryError() {
-//        File someFile = File.builder().build();
-//
-//        when(fileRepository.putFile(any(UUID.class), eq(someFile)))
-//                .thenReturn(Mono.error(new RuntimeException("Repository error"))); // You can replace RuntimeException with a more specific error if you wish.
-//
-//        Mono<ResponseEntity<UUID>> resultMono = fileController.addFile(Mono.just(someFile));
-//
-//        StepVerifier.create(resultMono)
-//                .expectErrorMatches(throwable ->
-//                        throwable instanceof RuntimeException &&
-//                                throwable.getMessage().contains("Repository error"))
-//                .verify();
-//    }
+        StepVerifier.create(fileService.put(fileId, file))
+                .expectNext(fileId)
+                .verifyComplete();
+
+        verify(fileCache, times(1)).put(fileId, file);
+        verifyNoMoreInteractions(fileCache);
+
+        verify(fileRepository, times(1)).putFile(fileId, file);
+        verifyNoMoreInteractions(fileRepository);
+    }
+
+
+    @Test
+    void givenNullFileIdAndFileWhenPutShouldReturnMonoWithError() {
+        StepVerifier.create(fileService.put(null, file))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException
+                                && "FileId cannot be null".equals(throwable.getMessage())
+                )
+                .verify();
+    }
+
+    @Test
+    void givenFileIdAndNullFileWhenPutShouldReturnMonoWithError() {
+        StepVerifier.create(fileService.put(fileId, null))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException
+                                && "File cannot be null".equals(throwable.getMessage())
+                )
+                .verify();
+    }
+
+    @Test
+    void givenNullFileIdAndNullFileWhenPutShouldReturnMonoWithError() {
+        StepVerifier.create(fileService.put(null, null))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof IllegalArgumentException
+                                && "FileId cannot be null".equals(throwable.getMessage())
+                )
+                .verify();
+    }
+
+    @Test
+    void givenExceptionFromFileCacheWhenPutShouldReturnMonoWithError() {
+        doThrow(RuntimeException.class).when(fileCache).put(fileId, file);
+
+        StepVerifier.create(fileService.put(fileId, file))
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(fileCache, times(1)).put(fileId, file);
+        verifyNoMoreInteractions(fileCache);
+
+        verifyNoInteractions(fileRepository);
+    }
+
+    @Test
+    void givenSuccessFromFileCacheAndExceptionFromFileRepositoryWhenPutFileShouldRemoveFromCacheAndReturnMonoWithError() {
+        when(fileRepository.putFile(fileId, file)).thenThrow(RuntimeException.class);
+
+        StepVerifier.create(fileService.put(fileId, file))
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(fileCache, times(1)).put(fileId, file);
+        verify(fileCache, times(1)).remove(fileId);
+        verifyNoMoreInteractions(fileCache);
+
+        verify(fileRepository, times(1)).putFile(fileId, file);
+        verifyNoMoreInteractions(fileRepository);
+    }
+
+    @Test
+    void givenSuccessFromFileCacheAndMonoWithErrorFromFileRepositoryWhenPutFileShouldRemoveFromCacheAndReturnMonoWithError() {
+        when(fileRepository.putFile(fileId, file)).thenReturn(Mono.error(new RuntimeException()));
+
+        StepVerifier.create(fileService.put(fileId, file))
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(fileCache, times(1)).put(fileId, file);
+        verify(fileCache, times(1)).remove(fileId);
+        verifyNoMoreInteractions(fileCache);
+
+        verify(fileRepository, times(1)).putFile(fileId, file);
+        verifyNoMoreInteractions(fileRepository);
+    }
+
+    @Test
+    void givenFileIdsWhenDeleteShouldInvokeDeleteOnFileCacheAndFileRepository() {
+        when(fileRepository.deleteFiles(fileIds)).thenReturn(Mono.empty());
+
+        StepVerifier.create(fileService.delete(fileIds))
+                .expectNoAccessibleContext()
+                .verifyComplete();
+
+        verify(fileCache, times(1)).remove(fileIds);
+        verifyNoMoreInteractions(fileCache);
+        verify(fileRepository, times(1)).deleteFiles(fileIds);
+        verifyNoMoreInteractions(fileRepository);
+    }
+
+    @Test
+    void givenEmptyFileIdsShouldReturnWithoutInvokingFileCacheAndFileRepository() {
+        StepVerifier.create(fileService.delete(List.of()))
+                .expectNoAccessibleContext()
+                .verifyComplete();
+
+        verifyNoInteractions(fileCache);
+        verifyNoInteractions(fileRepository);
+    }
+
+    @Test
+    void givenNullFileIdsShouldReturnWithoutInvokingFileCacheAndFileRepository() {
+        StepVerifier.create(fileService.delete(null))
+                .expectNoAccessibleContext()
+                .verifyComplete();
+
+        verifyNoInteractions(fileCache);
+        verifyNoInteractions(fileRepository);
+    }
+
+    @Test
+    void givenExceptionFromFileCacheWhenDeleteShouldReturnMonoWithError() {
+        doThrow(RuntimeException.class).when(fileCache).remove(fileIds);
+
+        StepVerifier.create(fileService.delete(fileIds))
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(fileCache, times(1)).remove(fileIds);
+        verifyNoMoreInteractions(fileCache);
+        verifyNoInteractions(fileRepository);
+    }
+
+    @Test
+    void givenExceptionFromFileRepositoryWhenDeleteShouldReturnMonoWithError() {
+        when(fileRepository.deleteFiles(fileIds)).thenThrow(RuntimeException.class);
+
+        StepVerifier.create(fileService.delete(fileIds))
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(fileCache, times(1)).remove(fileIds);
+        verifyNoMoreInteractions(fileCache);
+        verify(fileRepository, times(1)).deleteFiles(fileIds);
+        verifyNoMoreInteractions(fileRepository);
+    }
+
+    @Test
+    void givenMonoWithErrorFromFileRepositoryWhenDeleteShouldReturnMonoWithError() {
+        when(fileRepository.deleteFiles(fileIds)).thenReturn(Mono.error(new RuntimeException()));
+
+        StepVerifier.create(fileService.delete(fileIds))
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(fileCache, times(1)).remove(fileIds);
+        verifyNoMoreInteractions(fileCache);
+        verify(fileRepository, times(1)).deleteFiles(fileIds);
+        verifyNoMoreInteractions(fileRepository);
+    }
 
 }

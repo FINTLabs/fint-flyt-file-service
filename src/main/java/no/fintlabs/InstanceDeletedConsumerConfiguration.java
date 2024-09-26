@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
+import java.util.List;
+import java.util.UUID;
+
 @Configuration
 @AllArgsConstructor
 @Slf4j
@@ -28,9 +31,15 @@ public class InstanceDeletedConsumerConfiguration {
 
         return instanceFlowEventConsumerFactoryService.createRecordFactory(
                 Object.class,
-                instanceFlowConsumerRecord -> fileService.cleanupFiles(
-                        instanceFlowConsumerRecord.getInstanceFlowHeaders()
-                )
+                instanceFlowConsumerRecord -> {
+                    List<UUID> fileIds = instanceFlowConsumerRecord.getInstanceFlowHeaders().getFileIds();
+                    fileService.delete(fileIds)
+                            .doOnError(throwable -> log.error(
+                                    "Could not delete file(s) related to instance flow with headers={}",
+                                    instanceFlowConsumerRecord.getInstanceFlowHeaders()
+                            ))
+                            .block();
+                }
         ).createContainer(topic);
     }
 

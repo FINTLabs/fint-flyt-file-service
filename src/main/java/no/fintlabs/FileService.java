@@ -2,12 +2,12 @@ package no.fintlabs;
 
 import lombok.AllArgsConstructor;
 import no.fintlabs.cache.FintCache;
-import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.model.File;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,26 +30,38 @@ public class FileService {
         }
     }
 
-    public Mono<UUID> putFile(UUID fileId, File file) {
+    public Mono<UUID> put(UUID fileId, File file) {
         try {
+            if (Objects.isNull(fileId)) {
+                return Mono.error(new IllegalArgumentException("FileId cannot be null"));
+            }
+            if (Objects.isNull(file)) {
+                return Mono.error(new IllegalArgumentException("File cannot be null"));
+            }
             fileCache.put(fileId, file);
+        } catch (Exception e) {
+            return Mono.error(e);
+        }
+        try {
             return fileRepository.putFile(fileId, file)
+                    .doOnError(e -> fileCache.remove(fileId))
                     .thenReturn(fileId);
+        } catch (Exception e) {
+            fileCache.remove(fileId);
+            return Mono.error(e);
+        }
+    }
+
+    public Mono<Void> delete(List<UUID> fileIds) {
+        try {
+            if (Objects.isNull(fileIds) || fileIds.isEmpty()) {
+                return Mono.empty();
+            }
+            fileCache.remove(fileIds);
+            return fileRepository.deleteFiles(fileIds);
         } catch (Exception e) {
             return Mono.error(e);
         }
     }
 
-    public void cleanupFiles(InstanceFlowHeaders instanceFlowHeaders) {
-        deleteFileFromCache(instanceFlowHeaders.getFileIds());
-        deleteFileFromBlobStorage(instanceFlowHeaders.getFileIds());
-    }
-
-    private void deleteFileFromCache(List<UUID> fileIds) {
-
-    }
-
-    private void deleteFileFromBlobStorage(List<UUID> fileIds) {
-        fileRepository.deleteFiles(fileIds);
-    }
 }
