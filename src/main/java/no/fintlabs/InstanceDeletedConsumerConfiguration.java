@@ -20,11 +20,10 @@ public class InstanceDeletedConsumerConfiguration {
 
     @Bean
     public ConcurrentMessageListenerContainer<String, Object>
-    prepareInstanceToDispatchEventConsumer(InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService) {
+    handleInstanceDeletedEvent(InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService) {
         EventTopicNameParameters topic = EventTopicNameParameters.builder()
                 .eventName("instance-deleted")
                 .build();
-
         return instanceFlowEventConsumerFactoryService.createRecordFactory(
                 Object.class,
                 instanceFlowConsumerRecord -> {
