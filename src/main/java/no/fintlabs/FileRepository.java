@@ -1,8 +1,7 @@
 package no.fintlabs;
 
-import no.fintlabs.model.File;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.text.StringEscapeUtils;
+import no.fintlabs.model.File;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
@@ -41,12 +40,6 @@ public class FileRepository {
         return azureBlobAdapter.deleteFilesByIds(fileIds)
                 .doOnSuccess(aVoid -> fileIds.forEach(fileId -> logSuccessfulAction(fileId, "deleted")))
                 .doOnError(e -> log.error("Could not delete files", e));
-    }
-
-    private String generateDeleteBlobText(Long sourceApplicationId, String sourceApplicationInstanceId, String event) {
-        return event + " with tags" +
-                " sourceApplicationId=" + sourceApplicationId +
-                " sourceApplicationInstanceId=" + sourceApplicationInstanceId;
     }
 
     private void logSuccessfulAction(UUID fileId, String performedAction) {
