@@ -17,7 +17,6 @@ import java.util.UUID;
 @Slf4j
 public class InstanceDeletedConsumerConfiguration {
 
-    private final EventTopicService eventTopicService;
     private final FileService fileService;
 
     @Bean
