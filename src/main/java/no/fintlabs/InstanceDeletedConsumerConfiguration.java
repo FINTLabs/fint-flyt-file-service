@@ -3,13 +3,11 @@ package no.fintlabs;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
+import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
-
-import java.util.List;
-import java.util.UUID;
 
 @Configuration
 @AllArgsConstructor
@@ -27,15 +25,23 @@ public class InstanceDeletedConsumerConfiguration {
         return instanceFlowEventConsumerFactoryService.createRecordFactory(
                 Object.class,
                 instanceFlowConsumerRecord -> {
-                    List<UUID> fileIds = instanceFlowConsumerRecord.getInstanceFlowHeaders().getFileIds();
-                    fileService.delete(fileIds)
-                            .doOnError(throwable -> log.error(
-                                    "Could not delete file(s) related to instance flow with headers={}",
-                                    instanceFlowConsumerRecord.getInstanceFlowHeaders()
-                            ))
+                    InstanceFlowHeaders instanceFlowHeaders = instanceFlowConsumerRecord.getInstanceFlowHeaders();
+                    log.info(generateLogMessageRelatedToInstanceFlowHeaders("Deleting", instanceFlowHeaders));
+                    fileService.delete(instanceFlowHeaders.getFileIds())
+                            .doOnSuccess(aVoid -> log.info(generateLogMessageRelatedToInstanceFlowHeaders(
+                                    "Successfully deleted",
+                                    instanceFlowHeaders
+                            )))
+                            .doOnError(throwable -> log.error(generateLogMessageRelatedToInstanceFlowHeaders(
+                                    "Could not delete",
+                                    instanceFlowHeaders
+                            )))
                             .block();
                 }
         ).createContainer(topic);
     }
 
+    private String generateLogMessageRelatedToInstanceFlowHeaders(String action, InstanceFlowHeaders instanceFlowHeaders) {
+        return String.format("%s file(s) related to instance flow with headers=%s", action, instanceFlowHeaders);
+    }
 }

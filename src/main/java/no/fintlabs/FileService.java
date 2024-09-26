@@ -1,6 +1,7 @@
 package no.fintlabs;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.cache.FintCache;
 import no.fintlabs.model.File;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class FileService {
 
     private final FintCache<UUID, File> fileCache;
@@ -55,6 +57,7 @@ public class FileService {
     public Mono<Void> delete(List<UUID> fileIds) {
         try {
             if (Objects.isNull(fileIds) || fileIds.isEmpty()) {
+                log.info("List of fileIds is empty");
                 return Mono.empty();
             }
             fileCache.remove(fileIds);
