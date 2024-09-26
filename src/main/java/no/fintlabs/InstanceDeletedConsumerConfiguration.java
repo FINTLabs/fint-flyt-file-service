@@ -27,8 +27,6 @@ public class InstanceDeletedConsumerConfiguration {
                 .eventName("instance-deleted")
                 .build();
 
-        eventTopicService.ensureTopic(topic, 0);
-
         return instanceFlowEventConsumerFactoryService.createRecordFactory(
                 Object.class,
                 instanceFlowConsumerRecord -> {
