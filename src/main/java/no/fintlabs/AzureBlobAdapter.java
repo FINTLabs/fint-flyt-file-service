@@ -7,7 +7,6 @@ import com.azure.storage.blob.BlobServiceAsyncClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.*;
 import com.azure.storage.blob.options.BlobParallelUploadOptions;
-import com.azure.storage.blob.options.FindBlobsOptions;
 import com.google.common.collect.ImmutableMap;
 import no.fintlabs.model.File;
 import org.apache.commons.text.StringEscapeUtils;
@@ -19,7 +18,9 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -76,32 +77,29 @@ public class AzureBlobAdapter {
                 .map(response -> fileId);
     }
 
-    public Mono<File> downloadFile(UUID fileId) {
+    public Mono<Optional<File>> downloadFile(UUID fileId) {
         BlobAsyncClient blobAsyncClient = blobContainerAsyncClient.getBlobAsyncClient(fileId.toString());
         DownloadRetryOptions options = new DownloadRetryOptions().setMaxRetryRequests(3);
 
         return blobAsyncClient
                 .downloadContentWithResponse(options, new BlobRequestConditions())
-                .<BlobDownloadContentAsyncResponse>handle((response, sink) -> {
+                .handle((response, sink) -> {
                     if (response.getStatusCode() == 200) {
-                        sink.next(response);
+                        sink.next(Optional.of(mapToFile(response)));
+                    } else if (response.getStatusCode() == 404) {
+                        sink.next(Optional.empty());
                     } else {
                         sink.error(new RuntimeException("Received response that was not 200 OK: " + response));
                     }
-                })
-                .map(this::mapToFile);
+                });
     }
 
-    public Mono<Void> deleteFilesByTags(Long sourceApplicationId, String sourceApplicationInstanceId) {
-        return blobContainerAsyncClient
-                .findBlobsByTags(new FindBlobsOptions(String.format(
-                        "\"sourceApplicationId\"='%s'And\"sourceApplicationInstanceId\"='%s'",
-                        sourceApplicationId, sourceApplicationInstanceId
-                )))
-                .map(TaggedBlobItem::getName)
+    public Mono<Void> deleteFilesByIds(List<UUID> fileIds) {
+        return Flux.fromIterable(fileIds)
+                .map(UUID::toString)
                 .map(blobContainerAsyncClient::getBlobAsyncClient)
-                .flatMap(blobAsyncClient -> blobAsyncClient
-                        .deleteIfExistsWithResponse(DeleteSnapshotsOptionType.INCLUDE, null)
+                .flatMap(blobAsyncClient -> blobAsyncClient.deleteIfExistsWithResponse(
+                        DeleteSnapshotsOptionType.INCLUDE, null)
                 )
                 .then();
     }
