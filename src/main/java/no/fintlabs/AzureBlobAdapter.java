@@ -8,6 +8,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.*;
 import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import com.google.common.collect.ImmutableMap;
+import jakarta.annotation.PostConstruct;
 import no.fintlabs.model.File;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +33,6 @@ public class AzureBlobAdapter {
     private String containerName;
 
     private BlobContainerAsyncClient blobContainerAsyncClient;
-
-    private final long blockSize = 2L * 1024L * 1024L;
 
     @PostConstruct
     public void init() {
@@ -65,6 +63,7 @@ public class AzureBlobAdapter {
                 .put("sourceApplicationInstanceId", file.getSourceApplicationInstanceId())
                 .build();
 
+        long blockSize = 2L * 1024L * 1024L;
         return blobAsyncClient
                 .uploadWithResponse(
                         new BlobParallelUploadOptions(data)

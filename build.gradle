@@ -1,6 +1,6 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.14'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '3.3.5'
+    id 'io.spring.dependency-management' version '1.1.6'
     id 'java'
 }
 
@@ -14,42 +14,34 @@ configurations {
     }
 }
 
-jar {
+tasks.named('jar') {
     enabled = false
 }
 
 repositories {
     mavenCentral()
-    repositories {
-        maven {
-            url "https://repo.fintlabs.no/releases"
-        }
-    }
     mavenLocal()
+    maven {
+        url "https://repo.fintlabs.no/releases"
+    }
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
     implementation 'com.google.guava:guava:33.0.0-jre'
-
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.84.Final:osx-aarch_64'
+    implementation 'no.fintlabs:fint-flyt-resource-server:5.0.2-rc-1'
 
-    implementation 'no.fintlabs:fint-flyt-resource-server:5.0.0'
-    implementation 'javax.validation:validation-api'
+    implementation 'jakarta.validation:jakarta.validation-api:3.1.0'
 
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'no.fintlabs:fint-kafka:4.0.1'
     implementation 'no.fintlabs:fint-flyt-kafka:3.1.1'
-
     implementation 'org.springframework.boot:spring-boot-starter-cache'
-
     implementation 'no.fintlabs:fint-flyt-cache:1.2.3'
-
     implementation 'com.azure:azure-storage-blob:12.20.0'
-
     implementation 'org.apache.commons:commons-text:1.10.0'
 
     compileOnly 'org.projectlombok:lombok'
@@ -62,6 +54,6 @@ dependencies {
     testImplementation 'cglib:cglib-nodep:3.3.0'
 }
 
-test {
+tasks.named('test') {
     useJUnitPlatform()
 }
