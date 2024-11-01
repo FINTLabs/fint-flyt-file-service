@@ -46,7 +46,7 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-cache'
 
-    implementation 'no.fintlabs:fint-flyt-cache:1.2.3'
+    implementation 'no.fintlabs:fint-flyt-cache:1.2.4'
 
     implementation 'com.azure:azure-storage-blob:12.20.0'
 
