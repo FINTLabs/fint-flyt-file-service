@@ -23,7 +23,7 @@ spec:
         topic: 'no-permission'
   env:
     - name: JAVA_TOOL_OPTIONS
-      value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
+      value: '-XX:+ExitOnOutOfMemoryError -Xmx768M -Xms512M'
   envFrom:
     - secretRef:
         name: fint-flyt-file-service-azure-blob-storage
@@ -31,11 +31,11 @@ spec:
         name: fint-flyt-file-oauth2-client
   resources:
     limits:
-      memory: "2048Mi"
-      cpu: "1"
+      memory: "1024Mi"
+      cpu: "150m"
     requests:
       memory: "512Mi"
-      cpu: "100m"
+      cpu: "50m"
   restartPolicy: Always
   replicas: 1
   strategy:
