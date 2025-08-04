@@ -2,7 +2,9 @@ package no.fintlabs;
 
 import com.google.common.collect.ImmutableList;
 import no.fintlabs.cache.FintCache;
-import no.fintlabs.model.File;
+import no.fintlabs.file.File;
+import no.fintlabs.file.FileRepository;
+import no.fintlabs.file.FileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

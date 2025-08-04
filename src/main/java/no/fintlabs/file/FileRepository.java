@@ -1,7 +1,7 @@
-package no.fintlabs;
+package no.fintlabs.file;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.model.File;
+import no.fintlabs.AzureBlobAdapter;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
@@ -40,6 +40,15 @@ public class FileRepository {
         return azureBlobAdapter.deleteFilesByIds(fileIds)
                 .doOnSuccess(aVoid -> fileIds.forEach(fileId -> logSuccessfulAction(fileId, "deleted")))
                 .doOnError(e -> log.error("Could not delete files", e));
+    }
+
+    public int deleteFilesOlderThan(int days) {
+        List<DeletedFile> deletedFiles = azureBlobAdapter.deleteFilesOlderThanDays(days);
+        deletedFiles
+                .forEach(deletedFile ->
+                        log.info("deleted file with name {}, timestamp {}", deletedFile.name(), deletedFile.deletedAt())
+                );
+        return deletedFiles.size();
     }
 
     private void logSuccessfulAction(UUID fileId, String performedAction) {

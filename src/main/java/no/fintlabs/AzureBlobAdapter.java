@@ -8,7 +8,8 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.*;
 import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import com.google.common.collect.ImmutableMap;
-import no.fintlabs.model.File;
+import no.fintlabs.file.DeletedFile;
+import no.fintlabs.file.File;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -18,10 +19,8 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.OffsetDateTime;
+import java.util.*;
 
 @Service
 public class AzureBlobAdapter {
@@ -102,6 +101,34 @@ public class AzureBlobAdapter {
                         DeleteSnapshotsOptionType.INCLUDE, null)
                 )
                 .then();
+    }
+
+    public List<DeletedFile> deleteFilesOlderThanDays(int days) {
+        OffsetDateTime cutoff = OffsetDateTime.now().minusDays(days);
+
+        return blobContainerAsyncClient
+                .listBlobs(
+                        new ListBlobsOptions().setDetails(
+                                new BlobListDetails().setRetrieveMetadata(true)
+                        ),
+                        null
+                )
+                .filter(blobItem -> {
+                    OffsetDateTime lastMod = blobItem.getProperties().getLastModified();
+                    return lastMod != null && lastMod.isBefore(cutoff);
+                })
+                .flatMap(blobItem -> {
+                    String name = blobItem.getName();
+                    OffsetDateTime lastMod = blobItem.getProperties().getLastModified();
+                    BlobAsyncClient client = blobContainerAsyncClient.getBlobAsyncClient(name);
+                    DownloadRetryOptions options = new DownloadRetryOptions().setMaxRetryRequests(3);
+                    return client
+                            .deleteIfExistsWithResponse(DeleteSnapshotsOptionType.INCLUDE, null)
+                            .map(response -> new DeletedFile(name, lastMod));
+                })
+                .sort(Comparator.comparing(DeletedFile::deletedAt))
+                .collectList()
+                .block();
     }
 
     private File mapToFile(BlobDownloadContentAsyncResponse blobDownloadContentAsyncResponse) {
