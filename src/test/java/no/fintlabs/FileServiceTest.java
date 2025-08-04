@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 public class FileServiceTest {
@@ -293,6 +295,29 @@ public class FileServiceTest {
         verifyNoMoreInteractions(fileCache);
         verify(fileRepository, times(1)).deleteFiles(fileIds);
         verifyNoMoreInteractions(fileRepository);
+    }
+
+    @Test
+    void deleteFilesOlderThanShouldReturnCountFromRepository() {
+        int days = 10;
+        int deletedCount = 5;
+        when(fileRepository.deleteFilesOlderThan(days)).thenReturn(deletedCount);
+
+        int result = fileService.deleteFilesOlderThan(days);
+
+        assertThat(result).isEqualTo(deletedCount);
+        verify(fileRepository, times(1)).deleteFilesOlderThan(days);
+        verifyNoInteractions(fileCache);
+    }
+
+    @Test
+    void deleteFilesOlderThanWithExceptionShouldPropagateException() {
+        int days = 15;
+        when(fileRepository.deleteFilesOlderThan(days)).thenThrow(new RuntimeException("Deletion error"));
+
+        assertThrows(RuntimeException.class, () -> fileService.deleteFilesOlderThan(days));
+        verify(fileRepository, times(1)).deleteFilesOlderThan(days);
+        verifyNoInteractions(fileCache);
     }
 
 }
