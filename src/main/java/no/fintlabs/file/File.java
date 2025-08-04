@@ -1,4 +1,4 @@
-package no.fintlabs.model;
+package no.fintlabs.file;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

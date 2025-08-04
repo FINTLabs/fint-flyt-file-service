@@ -1,5 +1,8 @@
 fint:
   org-id: fintlabs.no
+  flyt:
+    file-service:
+      time-to-keep-azure-blobs-in-days: 180
   kafka:
     default-replicas: 1
 spring:

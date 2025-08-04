@@ -1,9 +1,8 @@
-package no.fintlabs;
+package no.fintlabs.file;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.cache.FintCache;
-import no.fintlabs.model.File;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -65,6 +64,10 @@ public class FileService {
         } catch (Exception e) {
             return Mono.error(e);
         }
+    }
+
+    public int deleteFilesOlderThan(int days) {
+        return fileRepository.deleteFilesOlderThan(days);
     }
 
 }
