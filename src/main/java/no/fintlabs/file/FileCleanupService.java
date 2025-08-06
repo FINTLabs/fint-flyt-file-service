@@ -18,7 +18,7 @@ public class FileCleanupService {
 
     @Scheduled(initialDelay = 30000, fixedDelay = 86400000)
     public void cleanup() {
-        log.info("Cleaning up azure blobs older than {}", timeToKeepAzureBlobsInDays);
+        log.info("Cleaning up azure blobs older than {} days", timeToKeepAzureBlobsInDays);
         var numberOfDeletedFiles = fileService.deleteFilesOlderThan(timeToKeepAzureBlobsInDays);
         log.info("Number of deleted files {}", numberOfDeletedFiles);
     }
