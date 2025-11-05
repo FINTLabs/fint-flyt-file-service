@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: ofk-no
+namespace: $NAMESPACE
 
 resources:
   - ../../../base
@@ -9,19 +9,19 @@ patches:
   - patch: |-
       - op: replace
         path: "/metadata/labels/app.kubernetes.io~1instance"
-        value: "fint-flyt-file-service_ofk-no"
+        value: "$APP_INSTANCE"
       - op: replace
         path: "/metadata/labels/fintlabs.no~1org-id"
-        value: "ofk.no"
+        value: "$ORG_ID"
       - op: replace
         path: "/spec/kafka/acls/0/topic"
-        value: "ofk-no.flyt.*"
+        value: "$KAFKA_TOPIC"
       - op: replace
         path: "/spec/orgId"
-        value: "ofk.no"
+        value: "$ORG_ID"
       - op: replace
         path: "/spec/env/1/value"
-        value: "ofk-no"
+        value: "$FINT_KAFKA_TOPIC_ORGID"
     target:
       kind: Application
       name: fint-flyt-file-service
@@ -29,10 +29,10 @@ patches:
   - patch: |-
       - op: replace
         path: "/metadata/labels/app.kubernetes.io~1instance"
-        value: "fint-flyt-file-service-azure-blob-storage_ofk_no"
+        value: "$BLOB_INSTANCE"
       - op: replace
         path: "/metadata/labels/fintlabs.no~1org-id"
-        value: "ofk.no"
+        value: "$ORG_ID"
     target:
       kind: AzureBlobContainer
       name: fint-flyt-file-service-azure-blob-storage

@@ -19,6 +19,9 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "rogfk.no"
+      - op: replace
+        path: "/spec/env/1/value"
+        value: "rogfk-no"
     target:
       kind: Application
       name: fint-flyt-file-service

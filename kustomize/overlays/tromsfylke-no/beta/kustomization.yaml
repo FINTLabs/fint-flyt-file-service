@@ -19,6 +19,9 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "tromsfylke.no"
+      - op: replace
+        path: "/spec/env/1/value"
+        value: "tromsfylke-no"
     target:
       kind: Application
       name: fint-flyt-file-service

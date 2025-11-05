@@ -5,9 +5,18 @@ import com.azure.storage.blob.BlobAsyncClient;
 import com.azure.storage.blob.BlobContainerAsyncClient;
 import com.azure.storage.blob.BlobServiceAsyncClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.azure.storage.blob.models.*;
+import com.azure.storage.blob.models.AccessTier;
+import com.azure.storage.blob.models.BlobDownloadContentAsyncResponse;
+import com.azure.storage.blob.models.BlobHttpHeaders;
+import com.azure.storage.blob.models.BlobListDetails;
+import com.azure.storage.blob.models.BlobRequestConditions;
+import com.azure.storage.blob.models.DeleteSnapshotsOptionType;
+import com.azure.storage.blob.models.DownloadRetryOptions;
+import com.azure.storage.blob.models.ListBlobsOptions;
+import com.azure.storage.blob.models.ParallelTransferOptions;
 import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import com.google.common.collect.ImmutableMap;
+import jakarta.annotation.PostConstruct;
 import no.fintlabs.file.DeletedFile;
 import no.fintlabs.file.File;
 import org.apache.commons.text.StringEscapeUtils;
@@ -17,10 +26,13 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
 import java.nio.ByteBuffer;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AzureBlobAdapter {
@@ -33,7 +45,7 @@ public class AzureBlobAdapter {
 
     private BlobContainerAsyncClient blobContainerAsyncClient;
 
-    private final long blockSize = 2L * 1024L * 1024L;
+    private static final long BLOCK_SIZE = 2L * 1024L * 1024L;
 
     @PostConstruct
     public void init() {
@@ -67,7 +79,7 @@ public class AzureBlobAdapter {
         return blobAsyncClient
                 .uploadWithResponse(
                         new BlobParallelUploadOptions(data)
-                                .setParallelTransferOptions(new ParallelTransferOptions().setBlockSizeLong(blockSize))
+                                .setParallelTransferOptions(new ParallelTransferOptions().setBlockSizeLong(BLOCK_SIZE))
                                 .setHeaders(new BlobHttpHeaders())
                                 .setMetadata(metadata)
                                 .setTags(tags)
@@ -121,7 +133,7 @@ public class AzureBlobAdapter {
                     String name = blobItem.getName();
                     OffsetDateTime lastMod = blobItem.getProperties().getLastModified();
                     BlobAsyncClient client = blobContainerAsyncClient.getBlobAsyncClient(name);
-                    DownloadRetryOptions options = new DownloadRetryOptions().setMaxRetryRequests(3);
+
                     return client
                             .deleteIfExistsWithResponse(DeleteSnapshotsOptionType.INCLUDE, null)
                             .map(response -> new DeletedFile(name, lastMod));

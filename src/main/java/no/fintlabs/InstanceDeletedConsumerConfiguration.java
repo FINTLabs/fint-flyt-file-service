@@ -3,9 +3,13 @@ package no.fintlabs;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.file.FileService;
-import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
-import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
-import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
+import no.fintlabs.flyt.kafka.instanceflow.consuming.InstanceFlowListenerFactoryService;
+import no.fintlabs.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
+import no.fintlabs.kafka.consuming.ErrorHandlerConfiguration;
+import no.fintlabs.kafka.consuming.ErrorHandlerFactory;
+import no.fintlabs.kafka.consuming.ListenerConfiguration;
+import no.fintlabs.kafka.topic.name.EventTopicNameParameters;
+import no.fintlabs.kafka.topic.name.TopicNamePrefixParameters;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
@@ -19,11 +23,22 @@ public class InstanceDeletedConsumerConfiguration {
 
     @Bean
     public ConcurrentMessageListenerContainer<String, Object>
-    handleInstanceDeletedEvent(InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService) {
-        EventTopicNameParameters topic = EventTopicNameParameters.builder()
+    handleInstanceDeletedEvent(
+            InstanceFlowListenerFactoryService instanceFlowListenerFactoryService,
+            ErrorHandlerFactory errorHandlerFactory
+    ) {
+        EventTopicNameParameters topic = EventTopicNameParameters
+                .builder()
+                .topicNamePrefixParameters(TopicNamePrefixParameters
+                        .builder()
+                        .orgIdApplicationDefault()
+                        .domainContextApplicationDefault()
+                        .build()
+                )
                 .eventName("instance-deleted")
                 .build();
-        return instanceFlowEventConsumerFactoryService.createRecordFactory(
+
+        return instanceFlowListenerFactoryService.createRecordListenerContainerFactory(
                 Object.class,
                 instanceFlowConsumerRecord -> {
                     InstanceFlowHeaders instanceFlowHeaders = instanceFlowConsumerRecord.getInstanceFlowHeaders();
@@ -38,7 +53,21 @@ public class InstanceDeletedConsumerConfiguration {
                                     instanceFlowHeaders
                             )))
                             .block();
-                }
+                },
+                ListenerConfiguration
+                        .stepBuilder()
+                        .groupIdApplicationDefault()
+                        .maxPollRecordsKafkaDefault()
+                        .maxPollIntervalKafkaDefault()
+                        .seekToBeginningOnAssignment()
+                        .build(),
+                errorHandlerFactory.createErrorHandler(
+                        ErrorHandlerConfiguration
+                                .stepBuilder()
+                                .noRetries()
+                                .skipFailedRecords()
+                                .build()
+                )
         ).createContainer(topic);
     }
 
