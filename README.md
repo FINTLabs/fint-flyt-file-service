@@ -34,7 +34,7 @@ Base path: `/internal/api/filer`
 
 `File` payload fields:
 
-```jsonc
+```json
 {
 "name": "example.pdf",          // required
 "sourceApplicationId": 123,     // required
@@ -84,10 +84,11 @@ Prerequisites:
 - Kafka broker and Azure Blob emulator/real account
 
 Useful commands:
-
+```shell
 ./gradlew clean build        # compile and run tests
 ./gradlew bootRun            # launch the service with local profiles
 ./gradlew test               # unit tests
+```
 
 For local testing set SPRING_PROFILES_ACTIVE=local-staging to use the dev-focused configuration in application-local-staging.yaml. Provide a storage connection string (UseDevelopmentStorage=true for Azurite) and Kafka bootstrap server (localhost:9092 by default).
 
@@ -103,8 +104,9 @@ Templates live under kustomize/templates/:
 - overlay.yaml.tpl — standard overlay
 
 Regenerate overlays after editing templates:
-
+```shell
 bin/render-overlays.sh
+```
 
 The script maps each overlay to the right template, applies overrides, and writes kustomization.yaml files in place.
 
@@ -123,7 +125,6 @@ The script maps each overlay to the right template, applies overrides, and write
 
 - FileService caches downloads; consider invalidating the cache when modifying testing scenarios.
 - AzureBlobAdapter relies on metadata and tags—mock these in tests or integration fixtures if you assert on derived fields.
-- When adding new overlays that need the env override, update the ENV_OVERRIDES map in bin/render-overlays.sh.
 
 ## Contributing
 
