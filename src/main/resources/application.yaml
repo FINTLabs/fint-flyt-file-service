@@ -19,5 +19,6 @@ spring:
       - flyt-kafka
       - flyt-logging
       - flyt-resource-server
-  codec:
-    max-in-memory-size: 100MB
+  http:
+    codecs:
+      max-in-memory-size: 100MB
