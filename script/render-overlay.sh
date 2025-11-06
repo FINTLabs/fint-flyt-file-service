@@ -4,7 +4,6 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE_DIR="$ROOT/kustomize/templates"
 BASE_TEMPLATE="$TEMPLATE_DIR/overlay.yaml.tpl"
-ENV_TEMPLATE="$TEMPLATE_DIR/overlay-with-env.yaml.tpl"
 
 while IFS= read -r file; do
   rel="${file#"$ROOT/kustomize/overlays/"}"
