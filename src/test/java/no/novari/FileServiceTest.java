@@ -1,10 +1,10 @@
-package no.fintlabs;
+package no.novari;
 
 import com.google.common.collect.ImmutableList;
 import no.fintlabs.cache.FintCache;
-import no.fintlabs.file.File;
-import no.fintlabs.file.FileRepository;
-import no.fintlabs.file.FileService;
+import no.novari.file.File;
+import no.novari.file.FileRepository;
+import no.novari.file.FileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

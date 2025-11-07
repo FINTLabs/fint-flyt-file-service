@@ -1,4 +1,4 @@
-package no.fintlabs.file;
+package no.novari.file;
 
 import java.time.OffsetDateTime;
 

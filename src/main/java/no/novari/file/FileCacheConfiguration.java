@@ -1,4 +1,4 @@
-package no.fintlabs.file;
+package no.novari.file;
 
 import no.fintlabs.cache.FintCache;
 import no.fintlabs.cache.FintCacheManager;

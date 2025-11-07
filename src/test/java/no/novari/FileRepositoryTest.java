@@ -1,11 +1,11 @@
-package no.fintlabs;
+package no.novari;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import no.fintlabs.file.DeletedFile;
-import no.fintlabs.file.File;
-import no.fintlabs.file.FileRepository;
+import no.novari.file.DeletedFile;
+import no.novari.file.File;
+import no.novari.file.FileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

@@ -1,7 +1,7 @@
-package no.fintlabs.file;
+package no.novari.file;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.AzureBlobAdapter;
+import no.novari.AzureBlobAdapter;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
