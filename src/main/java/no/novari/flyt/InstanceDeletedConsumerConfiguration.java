@@ -1,8 +1,8 @@
-package no.novari;
+package no.novari.flyt;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.novari.file.FileService;
+import no.novari.flyt.file.FileService;
 import no.fintlabs.flyt.kafka.instanceflow.consuming.InstanceFlowListenerFactoryService;
 import no.fintlabs.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.consuming.ErrorHandlerConfiguration;

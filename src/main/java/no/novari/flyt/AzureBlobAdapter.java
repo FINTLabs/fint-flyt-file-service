@@ -1,4 +1,4 @@
-package no.novari;
+package no.novari.flyt;
 
 import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobAsyncClient;
@@ -17,8 +17,8 @@ import com.azure.storage.blob.models.ParallelTransferOptions;
 import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import com.google.common.collect.ImmutableMap;
 import jakarta.annotation.PostConstruct;
-import no.novari.file.DeletedFile;
-import no.novari.file.File;
+import no.novari.flyt.file.DeletedFile;
+import no.novari.flyt.file.File;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;

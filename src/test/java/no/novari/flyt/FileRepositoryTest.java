@@ -1,11 +1,11 @@
-package no.novari;
+package no.novari.flyt;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import no.novari.file.DeletedFile;
-import no.novari.file.File;
-import no.novari.file.FileRepository;
+import no.novari.flyt.file.DeletedFile;
+import no.novari.flyt.file.File;
+import no.novari.flyt.file.FileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

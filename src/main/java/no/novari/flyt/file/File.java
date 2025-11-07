@@ -1,4 +1,4 @@
-package no.novari.file;
+package no.novari.flyt.file;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
