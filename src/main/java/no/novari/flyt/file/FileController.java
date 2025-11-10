@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-import static no.fintlabs.resourceserver.UrlPaths.INTERNAL_CLIENT_API;
+import static no.novari.flyt.resourceserver.UrlPaths.INTERNAL_CLIENT_API;
 
 @RestController
 @RequiredArgsConstructor

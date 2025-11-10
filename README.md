@@ -55,7 +55,7 @@ Errors return standard Spring WebFlux responses; validation failures yield 400 B
 
 ## Scheduled Tasks
 
-FileCleanupService.cleanup() runs every 24 hours (initial delay 30 seconds) and deletes blobs older than fint.flyt.file-service.time-to-keep-azure-blobs-in-days (default 180).
+FileCleanupService.cleanup() runs every 24 hours (initial delay 30 seconds) and deletes blobs older than novari.flyt.file-service.time-to-keep-azure-blobs-in-days (default 180).
 
 ## Configuration
 
@@ -63,15 +63,15 @@ The service uses layered Spring profiles: flyt-kafka, flyt-logging, and flyt-res
 
 Key properties:
 
-| Property | Description |
-| --- | --- |
-| fint.azure.storage-account.connection-string | Connection string for the Azure Storage account. |
-| fint.azure.storage.container-blob.name | Target container that stores files. |
-| fint.kafka.topic.orgId | Overridden per overlay to scope Kafka ACLs. |
-| fint.application-id | Defaults to fint-flyt-file-service. |
-| fint.flyt.file-service.time-to-keep-azure-blobs-in-days | Retention window for scheduled cleanup. |
-| spring.security.oauth2.resourceserver.jwt.issuer-uri | Issuer for token validation. |
-| spring.codec.max-in-memory-size | Raised to 100 MB to support large uploads. |
+| Property                                                  | Description |
+|-----------------------------------------------------------| --- |
+| fint.azure.storage-account.connection-string              | Connection string for the Azure Storage account. |
+| fint.azure.storage.container-blob.name                    | Target container that stores files. |
+| fint.kafka.topic.orgId                                    | Overridden per overlay to scope Kafka ACLs. |
+| fint.application-id                                       | Defaults to fint-flyt-file-service. |
+| novari.flyt.file-service.time-to-keep-azure-blobs-in-days | Retention window for scheduled cleanup. |
+| spring.security.oauth2.resourceserver.jwt.issuer-uri      | Issuer for token validation. |
+| spring.codec.max-in-memory-size                           | Raised to 100 MB to support large uploads. |
 
 Secrets referenced in the base kustomize manifest must provide Azure credentials and OAuth client information.
 
@@ -113,7 +113,7 @@ The script maps each overlay to the right template, applies overrides, and write
 ## Security
 
 - Exposes OAuth2 resource server with JWT validation (issuer at https://idp.felleskomponent.no).
-- Internal API paths restricted via fint.flyt.resource-server.security.api.internal-client.
+- Internal API paths restricted via `novari.flyt.resource-server.security.api.internal-client`.
 
 ## Observability & Operations
 

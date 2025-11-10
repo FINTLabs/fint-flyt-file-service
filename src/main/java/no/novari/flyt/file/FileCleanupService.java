@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class FileCleanupService {
 
-    @Value("${fint.flyt.file-service.time-to-keep-azure-blobs-in-days:180}")
+    @Value("${novari.flyt.file-service.time-to-keep-azure-blobs-in-days:180}")
     private int timeToKeepAzureBlobsInDays;
 
     private final FileService fileService;

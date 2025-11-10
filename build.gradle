@@ -41,7 +41,7 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
-    implementation 'no.fintlabs:fint-flyt-resource-server:6.0.0-rc-12'
+    implementation 'no.fintlabs:novari-flyt-resource-server:6.0.0-rc-17'
 
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'no.fintlabs:fint-kafka:5.0.0-rc-15'

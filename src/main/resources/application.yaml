@@ -1,4 +1,10 @@
 fint:
+  application-id: fint-flyt-file-service
+  cache:
+    defaultCacheEntryTimeToLiveMillis: 600000
+    defaultCacheHeapSize: 1000000
+
+novari:
   flyt:
     resource-server:
       security:
@@ -6,13 +12,11 @@ fint:
           internal-client:
             enabled: true
             authorized-client-ids: ${fint.sso.client-id}
-  application-id: fint-flyt-file-service
-  cache:
-    defaultCacheEntryTimeToLiveMillis: 600000
-    defaultCacheHeapSize: 1000000
+
 server:
   error:
     include-message: always
+
 spring:
   profiles:
     include:
