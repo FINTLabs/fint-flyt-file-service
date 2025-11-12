@@ -24,7 +24,7 @@ spec:
   env:
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
-    - name: fint.kafka.topic.orgId
+    - name: novari.kafka.topic.orgId
       value: fintlabs-no
   envFrom:
     - secretRef:

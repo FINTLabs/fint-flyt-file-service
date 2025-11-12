@@ -1,15 +1,13 @@
-package no.novari.flyt;
+package no.novari.flyt.file;
 
 import com.google.common.collect.ImmutableList;
-import no.fintlabs.cache.FintCache;
-import no.novari.flyt.file.File;
-import no.novari.flyt.file.FileRepository;
-import no.novari.flyt.file.FileService;
+import no.novari.cache.FintCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -27,6 +25,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class FileServiceTest {
 
     @Mock
@@ -45,7 +44,6 @@ public class FileServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         file = mock(File.class);
         fileId = UUID.fromString("c4f18f8e-3187-462b-80ea-70f77d00d5b5");
         fileIds = ImmutableList.of(

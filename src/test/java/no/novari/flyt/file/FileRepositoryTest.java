@@ -1,16 +1,15 @@
-package no.novari.flyt;
+package no.novari.flyt.file;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import no.novari.flyt.file.DeletedFile;
-import no.novari.flyt.file.File;
-import no.novari.flyt.file.FileRepository;
+import no.novari.flyt.AzureBlobAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -27,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class FileRepositoryTest {
 
     @Mock
@@ -39,8 +39,6 @@ public class FileRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-
         Logger logger = (Logger) LoggerFactory.getLogger(FileRepository.class);
         listAppender = new ListAppender<>();
         listAppender.start();
@@ -51,7 +49,6 @@ public class FileRepositoryTest {
     void putFileTest() {
         UUID fileId = UUID.randomUUID();
         File file = mock(File.class);
-        when(file.getName()).thenReturn("testName");
         when(azureBlobAdapter.uploadFile(eq(fileId), eq(file))).thenReturn(Mono.just(fileId));
 
         StepVerifier.create(fileRepository.putFile(fileId, file))

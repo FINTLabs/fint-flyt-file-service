@@ -1,14 +1,11 @@
-package no.novari.flyt;
+package no.novari;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication(scanBasePackages = {
-        "no.novari",
-        "no.fintlabs"
-})
+@SpringBootApplication
 @ConfigurationPropertiesScan
 @EnableScheduling
 public class Application {

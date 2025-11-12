@@ -1,7 +1,7 @@
 package no.novari.flyt.file;
 
-import no.fintlabs.cache.FintCache;
-import no.fintlabs.cache.FintCacheManager;
+import no.novari.cache.FintCache;
+import no.novari.cache.FintCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
