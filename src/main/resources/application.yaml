@@ -7,7 +7,6 @@ novari:
       security:
         api:
           internal-client:
-            enabled: true
             authorized-client-ids: ${fint.sso.client-id}
 
 server:

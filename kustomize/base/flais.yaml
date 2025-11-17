@@ -24,8 +24,6 @@ spec:
   env:
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
-    - name: novari.kafka.topic.orgId
-      value: fintlabs-no
   envFrom:
     - secretRef:
         name: fint-flyt-file-service-azure-blob-storage

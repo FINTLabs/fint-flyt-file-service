@@ -19,9 +19,11 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "afk.no"
-      - op: replace
-        path: "/spec/env/1/value"
-        value: "afk-no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+         name: "novari.kafka.topic.orgId"
+         value: "afk-no"
     target:
       kind: Application
       name: fint-flyt-file-service

@@ -19,9 +19,11 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "$ORG_ID"
-      - op: replace
-        path: "/spec/env/1/value"
-        value: "$FINT_KAFKA_TOPIC_ORGID"
+      - op: add
+        path: "/spec/env/-"
+        value:
+         name: "novari.kafka.topic.orgId"
+         value: "$FINT_KAFKA_TOPIC_ORGID"
     target:
       kind: Application
       name: fint-flyt-file-service

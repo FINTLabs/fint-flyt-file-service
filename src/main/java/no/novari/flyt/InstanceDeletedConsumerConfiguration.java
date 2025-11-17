@@ -30,7 +30,7 @@ public class InstanceDeletedConsumerConfiguration {
         EventTopicNameParameters topic = EventTopicNameParameters
                 .builder()
                 .topicNamePrefixParameters(TopicNamePrefixParameters
-                        .builder()
+                        .stepBuilder()
                         .orgIdApplicationDefault()
                         .domainContextApplicationDefault()
                         .build()
