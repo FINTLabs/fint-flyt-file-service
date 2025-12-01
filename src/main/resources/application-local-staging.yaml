@@ -1,5 +1,5 @@
 fint:
-  org-id: fintlabs.no
+  org-id: novari.no
 
 novari:
   flyt:
@@ -7,6 +7,8 @@ novari:
       time-to-keep-azure-blobs-in-days: 180
   kafka:
     default-replicas: 1
+    topic:
+      org-id: novari-no
 
 spring:
   kafka:
