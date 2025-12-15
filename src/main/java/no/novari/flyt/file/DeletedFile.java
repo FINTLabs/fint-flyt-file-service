@@ -1,4 +1,4 @@
-package no.fintlabs.file;
+package no.novari.flyt.file;
 
 import java.time.OffsetDateTime;
 

@@ -19,6 +19,11 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "ofk.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+         name: "novari.kafka.topic.orgId"
+         value: "ofk-no"
     target:
       kind: Application
       name: fint-flyt-file-service
@@ -33,4 +38,3 @@ patches:
     target:
       kind: AzureBlobContainer
       name: fint-flyt-file-service-azure-blob-storage
-

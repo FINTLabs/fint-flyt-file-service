@@ -1,12 +1,18 @@
 fint:
-  org-id: fintlabs.no
+  org-id: novari.no
+
+novari:
   flyt:
     file-service:
       time-to-keep-azure-blobs-in-days: 180
   kafka:
     default-replicas: 1
+    topic:
+      org-id: novari-no
+
 spring:
   kafka:
     bootstrap-servers: localhost:9092
+
 server:
   port: 8091

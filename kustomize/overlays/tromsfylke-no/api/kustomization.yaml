@@ -19,6 +19,11 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "tromsfylke.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+         name: "novari.kafka.topic.orgId"
+         value: "tromsfylke-no"
     target:
       kind: Application
       name: fint-flyt-file-service

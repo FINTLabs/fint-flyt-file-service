@@ -1,15 +1,13 @@
-package no.fintlabs;
+package no.novari.flyt.file;
 
 import com.google.common.collect.ImmutableList;
-import no.fintlabs.cache.FintCache;
-import no.fintlabs.file.File;
-import no.fintlabs.file.FileRepository;
-import no.fintlabs.file.FileService;
+import no.novari.cache.FintCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -19,8 +17,15 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class FileServiceTest {
 
     @Mock
@@ -39,7 +44,6 @@ public class FileServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         file = mock(File.class);
         fileId = UUID.fromString("c4f18f8e-3187-462b-80ea-70f77d00d5b5");
         fileIds = ImmutableList.of(

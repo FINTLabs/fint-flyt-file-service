@@ -1,23 +1,28 @@
 fint:
+  application-id: fint-flyt-file-service
+
+novari:
   flyt:
     resource-server:
       security:
         api:
           internal-client:
-            enabled: true
             authorized-client-ids: ${fint.sso.client-id}
-  application-id: fint-flyt-file-service
-  cache:
-    defaultCacheEntryTimeToLiveMillis: 600000
-    defaultCacheHeapSize: 1000000
+
 server:
   error:
     include-message: always
+
 spring:
   profiles:
     include:
       - flyt-kafka
       - flyt-logging
       - flyt-resource-server
-  codec:
-    max-in-memory-size: 100MB
+  http:
+    codecs:
+      max-in-memory-size: 100MB
+
+  output:
+    ansi:
+      enabled: always

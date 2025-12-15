@@ -1,8 +1,8 @@
-package no.fintlabs.file;
+package no.novari.flyt.file;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.cache.FintCache;
+import no.novari.cache.FintCache;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
