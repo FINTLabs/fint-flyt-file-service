@@ -71,7 +71,7 @@ Key properties:
 | fint.application-id                                       | Defaults to fint-flyt-file-service. |
 | novari.flyt.file-service.time-to-keep-azure-blobs-in-days | Retention window for scheduled cleanup. |
 | spring.security.oauth2.resourceserver.jwt.issuer-uri      | Issuer for token validation. |
-| spring.codec.max-in-memory-size                           | Raised to 100 MB to support large uploads. |
+| spring.codec.max-in-memory-size                           | Raised to 500 MB to support large uploads. |
 
 Secrets referenced in the base kustomize manifest must provide Azure credentials and OAuth client information.
 
