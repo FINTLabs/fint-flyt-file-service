@@ -32,18 +32,6 @@ Base path: `/internal/api/filer`
 | `POST` | `/`         | Store a file and return its generated UUID. | JSON matching the `File` schema below; the `contents` field is base64-encoded. | `201 Created` with UUID in the body.                    |
 | `GET`  | `/{fileId}` | Retrieve a previously stored file.          | –                                                                              | `200 OK` with the `File` payload, `404` when not found. |
 
-`File` payload fields:
-
-```json
-{
-"name": "example.pdf",          // required
-"sourceApplicationId": 123,     // required
-"sourceApplicationInstanceId": "instance-1", // required
-"type": "application/pdf",      // optional MediaType
-"encoding": "base64",           // optional, echoed back from metadata
-"contents": "JVBERi0xLjcKJYGBgY..." // required, base64 for byte[]
-}
-```
 
 Errors return standard Spring WebFlux responses; validation failures yield 400 Bad Request.
 
@@ -136,3 +124,4 @@ The script maps each overlay to the right template, applies overrides, and write
 ———
 
 FINT Flyt File Service is maintained by the FINT Flyt team. Reach out on the internal Slack channel or create an issue in this repository for questions or enhancements.
+
