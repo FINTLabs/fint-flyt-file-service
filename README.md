@@ -79,7 +79,7 @@ Secrets referenced in the base kustomize manifest must provide Azure credentials
 
 Prerequisites:
 
-- Java 21+
+- Java 25+
 - Gradle (wrapper bundled)
 - Kafka broker and Azure Blob emulator/real account
 

@@ -1,5 +1,8 @@
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import org.gradle.kotlin.dsl.named
+
 plugins {
-    id("org.springframework.boot") version "3.5.7"
+    id("org.springframework.boot") version "3.5.10"
     id("io.spring.dependency-management") version "1.1.7"
     id("java")
     id("com.github.ben-manes.versions") version "0.53.0"
@@ -10,7 +13,7 @@ version = "0.0.1-SNAPSHOT"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
 
@@ -25,11 +28,11 @@ tasks.jar {
 }
 
 repositories {
-    mavenCentral()
+    mavenLocal()
     maven {
         url = uri("https://repo.fintlabs.no/releases")
     }
-    mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
@@ -40,14 +43,14 @@ dependencies {
 
     implementation("com.google.guava:guava:33.5.0-jre")
 
-    implementation("no.novari:flyt-resource-server:6.0.0")
-    implementation("no.novari:flyt-kafka:4.0.0")
-    implementation("no.novari:flyt-cache:2.0.0")
+    implementation("no.novari:flyt-resource-server:7.0.0")
+    implementation("no.novari:flyt-kafka:6.0.0")
+    implementation("no.novari:flyt-cache:3.0.0")
 
-    implementation("com.azure:azure-storage-blob:12.32.0")
+    implementation("com.azure:azure-storage-blob:12.33.2")
 
-    implementation("org.apache.commons:commons-text:1.14.0")
-    implementation("org.apache.commons:commons-lang3:3.19.0")
+    implementation("org.apache.commons:commons-text:1.15.0")
+    implementation("org.apache.commons:commons-lang3:3.20.0")
 
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
@@ -60,4 +63,17 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+fun isNonStable(version: String): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
+    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
+    val isStable = stableKeyword || regex.matches(version)
+    return !isStable
+}
+
+tasks.named<DependencyUpdatesTask>("dependencyUpdates") {
+    rejectVersionIf {
+        isNonStable(candidate.version)
+    }
 }
