@@ -43,9 +43,9 @@ dependencies {
 
     implementation("com.google.guava:guava:33.5.0-jre")
 
-    implementation("no.novari:flyt-resource-server:6.2.0-rc-1")
-    implementation("no.novari:flyt-kafka:5.1.0-rc-1")
-    implementation("no.novari:flyt-cache:2.1.0-rc-3")
+    implementation("no.novari:flyt-resource-server:7.0.0")
+    implementation("no.novari:flyt-kafka:6.0.0")
+    implementation("no.novari:flyt-cache:3.0.0")
 
     implementation("com.azure:azure-storage-blob:12.33.2")
 
