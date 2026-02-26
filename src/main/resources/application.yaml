@@ -3,7 +3,7 @@ fint:
 
 novari:
   flyt:
-    resource-server:
+    web-resource-server:
       security:
         api:
           internal-client:
@@ -12,16 +12,20 @@ novari:
 server:
   error:
     include-message: always
+  tomcat:
+    max-swallow-size: 500MB
+    max-http-form-post-size: 500MB
 
 spring:
   profiles:
     include:
       - flyt-kafka
       - flyt-logging
-      - flyt-resource-server
-  http:
-    codecs:
-      max-in-memory-size: 500MB
+      - flyt-web-resource-server
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
 
   output:
     ansi:

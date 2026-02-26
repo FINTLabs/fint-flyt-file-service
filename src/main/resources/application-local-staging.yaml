@@ -4,7 +4,20 @@ fint:
 novari:
   flyt:
     file-service:
-      time-to-keep-azure-blobs-in-days: 180
+      time-to-keep-files-in-days: 180
+      local-security:
+        permit-all-enabled: true
+
+    web-resource-server:
+      security:
+        api:
+          internal:
+            enabled: false
+          internal-client:
+            enabled: false
+          external:
+            enabled: false
+
   kafka:
     default-replicas: 1
     topic:
