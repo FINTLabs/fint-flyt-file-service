@@ -23,7 +23,7 @@ spec:
         topic: 'no-permission'
   env:
     - name: JAVA_TOOL_OPTIONS
-      value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
+      value: '-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=60'
   envFrom:
     - secretRef:
         name: fint-flyt-file-service-azure-blob-storage
