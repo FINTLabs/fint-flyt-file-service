@@ -15,6 +15,7 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -187,12 +188,12 @@ class FileServiceTest {
         val decomposedFile = file.copy(name = "lønns arb vilkår st olav rog fylkl.pdf")
         val cachedFileCaptor = argumentCaptor<FilePayload>()
         val storedFileCaptor = argumentCaptor<FilePayload>()
-        whenever(fileRepository.putFile(fileId, storedFileCaptor.capture())).thenReturn(fileId)
+        whenever(fileRepository.putFile(eq(fileId), storedFileCaptor.capture())).thenReturn(fileId)
 
         val result = fileService.put(fileId, decomposedFile)
 
         assertThat(result).isEqualTo(fileId)
-        verify(fileCache, times(1)).put(fileId, cachedFileCaptor.capture())
+        verify(fileCache, times(1)).put(eq(fileId), cachedFileCaptor.capture())
         assertThat(cachedFileCaptor.firstValue.name).isEqualTo("lønns arb vilkår st olav rog fylkl.pdf")
         assertThat(storedFileCaptor.firstValue.name).isEqualTo("lønns arb vilkår st olav rog fylkl.pdf")
         verifyNoMoreInteractions(fileCache)
