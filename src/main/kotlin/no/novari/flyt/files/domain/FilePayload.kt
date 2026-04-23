@@ -19,32 +19,4 @@ data class FilePayload(
     val encoding: String? = null,
     @field:NotEmpty
     val contents: ByteArray,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is FilePayload) return false
-
-        return name == other.name &&
-            sourceApplicationId == other.sourceApplicationId &&
-            sourceApplicationInstanceId == other.sourceApplicationInstanceId &&
-            type == other.type &&
-            encoding == other.encoding &&
-            contents.contentEquals(other.contents)
-    }
-
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + (sourceApplicationId?.hashCode() ?: 0)
-        result = 31 * result + (sourceApplicationInstanceId?.hashCode() ?: 0)
-        result = 31 * result + (type?.hashCode() ?: 0)
-        result = 31 * result + (encoding?.hashCode() ?: 0)
-        result = 31 * result + contents.contentHashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "FilePayload(name=$name, sourceApplicationId=$sourceApplicationId, " +
-            "sourceApplicationInstanceId=$sourceApplicationInstanceId, type=$type, " +
-            "encoding=$encoding, contentsLength=${contents.size})"
-    }
-}
+)
