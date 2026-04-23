@@ -24,7 +24,9 @@ import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import java.nio.charset.StandardCharsets
 import java.time.OffsetDateTime
+import java.util.Base64
 import java.util.UUID
 
 @Service
@@ -59,7 +61,7 @@ class AzureBlobAdapter(
 
         val metadata =
             buildMap {
-                put(METADATA_NAME, StringEscapeUtils.escapeHtml4(file.name))
+                put(METADATA_NAME, encodeMetadataValue(file.name))
                 file.type?.let { put(METADATA_TYPE, it.toString()) }
                 file.encoding?.let { put(METADATA_ENCODING, it) }
                 file.sourceApplicationId?.let { put(METADATA_SOURCE_APPLICATION_ID, it.toString()) }
@@ -167,7 +169,7 @@ class AzureBlobAdapter(
         val value = blobDownloadContentResponse.value
 
         return FilePayload(
-            name = StringEscapeUtils.unescapeHtml4(metadata[METADATA_NAME].orEmpty()),
+            name = decodeMetadataValue(metadata[METADATA_NAME].orEmpty()),
             sourceApplicationId = metadata[METADATA_SOURCE_APPLICATION_ID]?.toLongOrNull(),
             sourceApplicationInstanceId = metadata[METADATA_SOURCE_APPLICATION_INSTANCE_ID],
             type = metadata[METADATA_TYPE]?.let(MediaType::valueOf),
@@ -184,4 +186,24 @@ class AzureBlobAdapter(
         private const val METADATA_SOURCE_APPLICATION_ID = "sourceApplicationId"
         private const val METADATA_SOURCE_APPLICATION_INSTANCE_ID = "sourceApplicationInstanceId"
     }
+}
+
+private const val METADATA_ENCODING_PREFIX = "b64:"
+
+internal fun encodeMetadataValue(value: String): String {
+    val encoded =
+        Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(value.toByteArray(StandardCharsets.UTF_8))
+
+    return "$METADATA_ENCODING_PREFIX$encoded"
+}
+
+internal fun decodeMetadataValue(value: String): String {
+    if (!value.startsWith(METADATA_ENCODING_PREFIX)) {
+        return StringEscapeUtils.unescapeHtml4(value)
+    }
+
+    val encodedValue = value.removePrefix(METADATA_ENCODING_PREFIX)
+    return String(Base64.getUrlDecoder().decode(encodedValue), StandardCharsets.UTF_8)
 }
