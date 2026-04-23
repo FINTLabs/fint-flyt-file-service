@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class FileCleanupService(
-    @param:Value("\${novari.flyt.file-service.time-to-keep-files-in-days:180}")
+    @param:Value("\${novari.flyt.file-service.time-to-keep-files-in-days:61}")
     private val timeToKeepFilesInDays: Int,
     private val fileService: FileService,
 ) {

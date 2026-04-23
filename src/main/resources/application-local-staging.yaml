@@ -4,7 +4,7 @@ fint:
 novari:
   flyt:
     file-service:
-      time-to-keep-files-in-days: 180
+      time-to-keep-files-in-days: 61
       local-security:
         permit-all-enabled: true
 

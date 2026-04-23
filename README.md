@@ -1,31 +1,31 @@
 # FINT Flyt File Service
 
-Kotlin-basert Spring Boot-tjeneste for opplasting og uthenting av filer i Flyt.
-Tjenesten eksponerer et internt HTTP-API, lagrer filer i pluggbar storage (Azure i prod, in-memory lokalt), bruker cache for raske oppslag, og rydder filer via både schedule og Kafka-eventer.
+Kotlin-based Spring Boot service for uploading and retrieving files in Flyt.
+The service exposes an internal HTTP API, stores files in pluggable storage (Azure in production, in-memory locally), uses caching for fast lookups, and removes files through both scheduled jobs and Kafka events.
 
-## Høydepunkter
+## Highlights
 
 - Spring MVC (`spring-boot-starter-web`).
-- Domenemodell i Kotlin.
-- Global exception handling med `ProblemDetail`.
-- JSON-logging via Logback + logstash encoder.
-- Lokal utvikling uten Azure med in-memory storage adapter.
+- Domain model in Kotlin.
+- Global exception handling with `ProblemDetail`.
+- JSON logging via Logback + logstash encoder.
+- Local development without Azure using an in-memory storage adapter.
 
-## Arkitektur
+## Architecture
 
-| Komponent | Ansvar |
+| Component | Responsibility |
 | --- | --- |
-| `FileController` | Endepunkter for `POST` og `GET` av filer. |
-| `FileService` | Forretningsflyt, cache-oppslag og fallback til repository. |
-| `FileRepository` | Lagringsoperasjoner via `BlobStorageAdapter`. |
-| `BlobStorageAdapter` | Lagringsabstraksjon (port). |
-| `AzureBlobAdapter` | Azure Blob-implementasjon (`!local-staging`). |
-| `InMemoryBlobAdapter` | Lokal fake-lagring (`local-staging`). |
-| `GlobalExceptionHandler` | Standardiserte `ProblemDetail`-responser for feil. |
-| `FileCleanupService` | Daglig opprydding av gamle filer. |
-| `InstanceDeletedConsumerConfiguration` | Kafka-listener for sletting av filer på `instance-deleted` event. |
+| `FileController` | Endpoints for `POST` and `GET` of files. |
+| `FileService` | Business flow, cache lookups, and repository fallback. |
+| `FileRepository` | Storage operations through `BlobStorageAdapter`. |
+| `BlobStorageAdapter` | Storage abstraction (port). |
+| `AzureBlobAdapter` | Azure Blob implementation (`!local-staging`). |
+| `InMemoryBlobAdapter` | Local fake storage (`local-staging`). |
+| `GlobalExceptionHandler` | Standardized `ProblemDetail` error responses. |
+| `FileCleanupService` | Daily cleanup of old files. |
+| `InstanceDeletedConsumerConfiguration` | Kafka listener for deleting files on `instance-deleted` events. |
 
-## Pakkestruktur
+## Package Structure
 
 - `no.novari.flyt.files.api`
 - `no.novari.flyt.files.application`
@@ -40,10 +40,10 @@ Tjenesten eksponerer et internt HTTP-API, lagrer filer i pluggbar storage (Azure
 
 Base path: `/api/intern-klient/filer`
 
-| Method | Path | Beskrivelse | Respons |
+| Method | Path | Description | Response |
 | --- | --- | --- | --- |
-| `POST` | `/api/intern-klient/filer` | Lagrer fil og returnerer generert UUID. | `201 Created` + UUID i body |
-| `GET` | `/api/intern-klient/filer/{fileId}` | Henter fil på UUID. | `200 OK` + `FilePayload` |
+| `POST` | `/api/intern-klient/filer` | Stores a file and returns a generated UUID. | `201 Created` + UUID in the body |
+| `GET` | `/api/intern-klient/filer/{fileId}` | Retrieves a file by UUID. | `200 OK` + `FilePayload` |
 
 `FilePayload` (request/response):
 
@@ -58,82 +58,82 @@ Base path: `/api/intern-klient/filer`
 }
 ```
 
-`contents` er base64 i JSON og mapes til `ByteArray` internt.
+`contents` is base64 in JSON and is mapped to `ByteArray` internally.
 
-## Feilhåndtering
+## Error Handling
 
-API-et returnerer `application/problem+json` (`ProblemDetail`) uten interne detaljer i respons.
+The API returns `application/problem+json` (`ProblemDetail`) without internal details in the response.
 
-Typiske statuser:
+Typical statuses:
 
-- `400 Bad Request`: valideringsfeil, ugyldig JSON, ugyldig UUID-format.
-- `404 Not Found`: fil finnes ikke.
-- `405 Method Not Allowed`: ikke støttet HTTP-metode.
-- `500 Internal Server Error`: uventede serverfeil.
+- `400 Bad Request`: validation errors, invalid JSON, invalid UUID format.
+- `404 Not Found`: file does not exist.
+- `405 Method Not Allowed`: unsupported HTTP method.
+- `500 Internal Server Error`: unexpected server errors.
 
 ## Storage
 
-### Produksjon / ikke-lokal
+### Production / non-local
 
-`AzureBlobAdapter` er aktiv når profil **ikke** er `local-staging`:
+`AzureBlobAdapter` is active when the profile is **not** `local-staging`:
 
-- Leser:
+- Reads:
   - `fint.azure.storage-account.connection-string`
   - `fint.azure.storage.container-blob.name`
 
-### Lokal (`local-staging`)
+### Local (`local-staging`)
 
-`InMemoryBlobAdapter` er aktiv i `local-staging`, så Azure-credentials trengs ikke lokalt.
+`InMemoryBlobAdapter` is active in `local-staging`, so Azure credentials are not required locally.
 
-## Sikkerhet
+## Security
 
-Prosjektet bruker `flyt-web-resource-server`.
+The project uses `flyt-web-resource-server`.
 
-Default profiler i `application.yaml`:
+Default profiles in `application.yaml`:
 
 - `flyt-kafka`
 - `flyt-logging`
 - `flyt-web-resource-server`
 
-Lokal bypass av auth/JWT krever **to** betingelser:
+Local auth/JWT bypass requires **two** conditions:
 
-1. Profil `local-staging`
+1. Profile `local-staging`
 2. Property `novari.flyt.file-service.local-security.permit-all-enabled=true`
 
-Denne styres i `LocalPermitAllSecurityConfiguration`.
+This is controlled in `LocalPermitAllSecurityConfiguration`.
 
-I `application-local-staging.yaml` er følgende også satt:
+The following is also set in `application-local-staging.yaml`:
 
 - `novari.flyt.web-resource-server.security.api.internal.enabled=false`
 - `novari.flyt.web-resource-server.security.api.internal-client.enabled=false`
 - `novari.flyt.web-resource-server.security.api.external.enabled=false`
 
-## Logging og observability
+## Logging and Observability
 
 - Logging: `kotlin-logging` (`io.github.oshai:kotlin-logging-jvm`)
 - Log format: JSON via `logback.xml` + `logstash-logback-encoder`
-- Actuator: helse og metrics (`/actuator/health`, `/actuator/prometheus`)
+- Actuator: health and metrics (`/actuator/health`, `/actuator/prometheus`)
 
-## Konfigurasjon
+## Configuration
 
-| Property | Beskrivelse |
+| Property | Description |
 | --- | --- |
-| `fint.application-id` | App-id, default `fint-flyt-file-service`. |
-| `novari.flyt.file-service.time-to-keep-files-in-days` | Retention-vindu for opprydding (default 180). |
-| `fint.azure.storage-account.connection-string` | Azure connection string (ikke nødvendig i `local-staging`). |
-| `fint.azure.storage.container-blob.name` | Azure container-navn (ikke nødvendig i `local-staging`). |
-| `novari.flyt.file-service.local-security.permit-all-enabled` | Lokal `permitAll` når `local-staging`. |
-| `novari.flyt.web-resource-server.security.api.internal-client.authorized-client-ids` | Autoriserte interne klient-id-er. |
+| `fint.application-id` | App ID, default `fint-flyt-file-service`. |
+| `novari.flyt.file-service.time-to-keep-files-in-days` | Retention window for cleanup (default 61). |
+| `fint.azure.storage-account.connection-string` | Azure connection string (not required in `local-staging`). |
+| `fint.azure.storage.container-blob.name` | Azure container name (not required in `local-staging`). |
+| `novari.flyt.file-service.local-security.permit-all-enabled` | Local `permitAll` when `local-staging` is active. |
+| `novari.flyt.web-resource-server.security.api.internal-client.authorized-client-ids` | Authorized internal client IDs. |
 
-## Lokal kjøring
+## Local Run
 
-Forutsetninger:
+Prerequisites:
 
 - Java 25+
 - Gradle wrapper (`./gradlew`)
-- Lokal Kafka på `localhost:9092` (for Kafka-relaterte beans)
+- Local Kafka on `localhost:9092` (for Kafka-related beans)
 
-Kommandoer:
+Commands:
 
 ```shell
 ./gradlew clean build
@@ -141,9 +141,9 @@ Kommandoer:
 ./gradlew bootRun --args='--spring.profiles.active=local-staging'
 ```
 
-Med `local-staging` bruker tjenesten in-memory storage.
+With `local-staging`, the service uses in-memory storage.
 
-## Eksempel på manuell test
+## Example Manual Test
 
 ```shell
 BASE_URL="http://localhost:8091"
@@ -158,4 +158,3 @@ curl -i -X POST "$API" \
     "contents": "SGVsbG8="
   }'
 ```
-
