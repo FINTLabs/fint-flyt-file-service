@@ -13,13 +13,14 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
+import org.springframework.http.MediaType
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
@@ -39,7 +40,15 @@ class FileServiceTest {
 
     @BeforeEach
     fun setUp() {
-        file = mock()
+        file =
+            FilePayload(
+                name = "example.pdf",
+                sourceApplicationId = 123L,
+                sourceApplicationInstanceId = "instance-1",
+                type = MediaType.APPLICATION_PDF,
+                encoding = "base64",
+                contents = byteArrayOf(1, 2, 3),
+            )
         fileId = UUID.fromString("c4f18f8e-3187-462b-80ea-70f77d00d5b5")
         fileIds =
             listOf(
@@ -157,6 +166,37 @@ class FileServiceTest {
         verify(fileCache, times(1)).put(fileId, file)
         verifyNoMoreInteractions(fileCache)
         verify(fileRepository, times(1)).putFile(fileId, file)
+        verifyNoMoreInteractions(fileRepository)
+    }
+
+    @Test
+    fun `findById normalizes cached file name to nfc`() {
+        val decomposedFile = file.copy(name = "lønns arb vilkår st olav rog fylkl.pdf")
+        whenever(fileCache.get(fileId)).thenReturn(decomposedFile)
+
+        val result = fileService.findById(fileId)
+
+        assertThat(result.name).isEqualTo("lønns arb vilkår st olav rog fylkl.pdf")
+        verify(fileCache, times(1)).get(fileId)
+        verifyNoMoreInteractions(fileCache)
+        verifyNoInteractions(fileRepository)
+    }
+
+    @Test
+    fun `put normalizes file name to nfc before storing`() {
+        val decomposedFile = file.copy(name = "lønns arb vilkår st olav rog fylkl.pdf")
+        val cachedFileCaptor = argumentCaptor<FilePayload>()
+        val storedFileCaptor = argumentCaptor<FilePayload>()
+        whenever(fileRepository.putFile(fileId, storedFileCaptor.capture())).thenReturn(fileId)
+
+        val result = fileService.put(fileId, decomposedFile)
+
+        assertThat(result).isEqualTo(fileId)
+        verify(fileCache, times(1)).put(fileId, cachedFileCaptor.capture())
+        assertThat(cachedFileCaptor.firstValue.name).isEqualTo("lønns arb vilkår st olav rog fylkl.pdf")
+        assertThat(storedFileCaptor.firstValue.name).isEqualTo("lønns arb vilkår st olav rog fylkl.pdf")
+        verifyNoMoreInteractions(fileCache)
+        verify(fileRepository, times(1)).putFile(fileId, storedFileCaptor.firstValue)
         verifyNoMoreInteractions(fileRepository)
     }
 
