@@ -19,4 +19,10 @@ data class FilePayload(
     val encoding: String? = null,
     @field:NotEmpty
     val contents: ByteArray,
-)
+) {
+    override fun toString(): String {
+        return "FilePayload(name=$name, sourceApplicationId=$sourceApplicationId, " +
+            "sourceApplicationInstanceId=$sourceApplicationInstanceId, type=$type, " +
+            "encoding=$encoding, contentsLength=${contents.size})"
+    }
+}

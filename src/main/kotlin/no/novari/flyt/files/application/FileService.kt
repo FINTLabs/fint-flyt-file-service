@@ -7,6 +7,7 @@ import no.novari.flyt.files.domain.FilePayload
 import no.novari.flyt.files.domain.exception.FileNotFoundException
 import no.novari.flyt.files.infrastructure.storage.FileRepository
 import org.springframework.stereotype.Service
+import java.text.Normalizer
 import java.util.UUID
 
 @Service
@@ -24,17 +25,18 @@ class FileService(
                 null
             }
         val fileFromStorage = fileFromCache ?: fileRepository.findById(fileId)
-        return fileFromStorage ?: throw FileNotFoundException(fileId)
+        return fileFromStorage?.let(::normalizeFileName) ?: throw FileNotFoundException(fileId)
     }
 
     fun put(
         fileId: UUID,
         file: FilePayload,
     ): UUID {
-        fileCache.put(fileId, file)
+        val normalizedFile = normalizeFileName(file)
+        fileCache.put(fileId, normalizedFile)
 
         return try {
-            fileRepository.putFile(fileId, file)
+            fileRepository.putFile(fileId, normalizedFile)
         } catch (exception: Exception) {
             fileCache.remove(fileId)
             throw exception
@@ -55,5 +57,14 @@ class FileService(
 
     fun deleteFilesOlderThan(days: Int): Int {
         return fileRepository.deleteFilesOlderThan(days)
+    }
+
+    private fun normalizeFileName(file: FilePayload): FilePayload {
+        val normalizedName = Normalizer.normalize(file.name, Normalizer.Form.NFC)
+        return if (normalizedName == file.name) {
+            file
+        } else {
+            file.copy(name = normalizedName)
+        }
     }
 }
