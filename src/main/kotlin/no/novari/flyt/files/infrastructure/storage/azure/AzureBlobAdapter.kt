@@ -192,7 +192,8 @@ private const val METADATA_ENCODING_PREFIX = "b64:"
 
 internal fun encodeMetadataValue(value: String): String {
     val encoded =
-        Base64.getUrlEncoder()
+        Base64
+            .getUrlEncoder()
             .withoutPadding()
             .encodeToString(value.toByteArray(StandardCharsets.UTF_8))
 
