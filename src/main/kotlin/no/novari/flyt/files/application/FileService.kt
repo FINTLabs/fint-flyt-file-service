@@ -87,6 +87,7 @@ class FileService(
             file.name
                 .trim()
                 .replace(WHITESPACE_BEFORE_EXTENSION_REGEX, "$1")
+                .replace(TYPOGRAPHIC_DASHES_REGEX, "-")
                 .let { Normalizer.normalize(it, Normalizer.Form.NFC) }
 
         return if (normalizedName == file.name) {
@@ -98,6 +99,7 @@ class FileService(
 
     companion object {
         private val WHITESPACE_BEFORE_EXTENSION_REGEX = Regex("""\s+(\.[^.\s]+(?:\.[^.\s]+)*)$""")
+        private val TYPOGRAPHIC_DASHES_REGEX = Regex("[\u2013\u2014]")
     }
 
     private fun describeFileName(fileName: String): String {

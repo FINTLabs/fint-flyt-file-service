@@ -184,13 +184,13 @@ class FileServiceTest {
     }
 
     @Test
-    fun `findById trims file name and removes whitespace before extension`() {
+    fun `findById trims file name removes whitespace before extension and normalizes typographic dash`() {
         val fileWithWhitespace = file.copy(name = "  Example document – applicant copy .pdf  ")
         whenever(fileCache.get(fileId)).thenReturn(fileWithWhitespace)
 
         val result = fileService.findById(fileId)
 
-        assertThat(result.name).isEqualTo("Example document – applicant copy.pdf")
+        assertThat(result.name).isEqualTo("Example document - applicant copy.pdf")
         verify(fileCache, times(1)).get(fileId)
         verifyNoMoreInteractions(fileCache)
         verifyNoInteractions(fileRepository)
@@ -215,7 +215,7 @@ class FileServiceTest {
     }
 
     @Test
-    fun `put trims file name and removes whitespace before extension while preserving en dash`() {
+    fun `put trims file name removes whitespace before extension and normalizes typographic dash`() {
         val fileWithWhitespace = file.copy(name = "  Example document – applicant copy .pdf  ")
         val cachedFileCaptor = argumentCaptor<FilePayload>()
         val storedFileCaptor = argumentCaptor<FilePayload>()
@@ -225,8 +225,8 @@ class FileServiceTest {
 
         assertThat(result).isEqualTo(fileId)
         verify(fileCache, times(1)).put(eq(fileId), cachedFileCaptor.capture())
-        assertThat(cachedFileCaptor.firstValue.name).isEqualTo("Example document – applicant copy.pdf")
-        assertThat(storedFileCaptor.firstValue.name).isEqualTo("Example document – applicant copy.pdf")
+        assertThat(cachedFileCaptor.firstValue.name).isEqualTo("Example document - applicant copy.pdf")
+        assertThat(storedFileCaptor.firstValue.name).isEqualTo("Example document - applicant copy.pdf")
         verify(fileRepository, times(1)).putFile(fileId, storedFileCaptor.firstValue)
         verifyNoMoreInteractions(fileCache)
         verifyNoMoreInteractions(fileRepository)
