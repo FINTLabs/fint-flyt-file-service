@@ -24,6 +24,16 @@ patches:
         value:
          name: "novari.kafka.topic.orgId"
          value: "agderfk-no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+         name: "logging.level.no.novari.flyt.files.application"
+         value: "DEBUG"
+      - op: add
+        path: "/spec/env/-"
+        value:
+         name: "logging.level.no.novari.flyt.files.infrastructure.storage.azure"
+         value: "DEBUG"
     target:
       kind: Application
       name: fint-flyt-file-service

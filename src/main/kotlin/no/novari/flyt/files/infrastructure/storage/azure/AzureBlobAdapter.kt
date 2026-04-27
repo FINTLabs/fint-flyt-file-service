@@ -14,6 +14,7 @@ import com.azure.storage.blob.models.DownloadRetryOptions
 import com.azure.storage.blob.models.ListBlobsOptions
 import com.azure.storage.blob.models.ParallelTransferOptions
 import com.azure.storage.blob.options.BlobParallelUploadOptions
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PostConstruct
 import no.novari.flyt.files.domain.DeletedFile
 import no.novari.flyt.files.domain.FilePayload
@@ -37,6 +38,7 @@ class AzureBlobAdapter(
     @param:Value("\${fint.azure.storage.container-blob.name}")
     private val containerName: String,
 ) : BlobStorageAdapter {
+    private val log = KotlinLogging.logger {}
     private lateinit var blobContainerClient: BlobContainerClient
 
     @PostConstruct
@@ -58,10 +60,21 @@ class AzureBlobAdapter(
     ): UUID {
         val blobClient = blobContainerClient.getBlobClient(fileId.toString())
         val data = BinaryData.fromBytes(file.contents)
+        val encodedFileName = encodeMetadataValue(file.name)
+
+        log.atDebug {
+            message = "Encoding file metadata for fileId={} fileName={} encodedMetadataName={}"
+            arguments =
+                arrayOf(
+                    fileId,
+                    describeFileName(file.name),
+                    encodedFileName,
+                )
+        }
 
         val metadata =
             buildMap {
-                put(METADATA_NAME, encodeMetadataValue(file.name))
+                put(METADATA_NAME, encodedFileName)
                 file.type?.let { put(METADATA_TYPE, it.toString()) }
                 file.encoding?.let { put(METADATA_ENCODING, it) }
                 file.sourceApplicationId?.let { put(METADATA_SOURCE_APPLICATION_ID, it.toString()) }
@@ -103,7 +116,7 @@ class AzureBlobAdapter(
                 )
 
             when (response.statusCode) {
-                HttpStatus.OK.value() -> mapToFile(response)
+                HttpStatus.OK.value() -> mapToFile(fileId, response)
                 HttpStatus.NOT_FOUND.value() -> null
                 else -> throw RuntimeException("Received response that was not 200 OK: $response")
             }
@@ -164,18 +177,52 @@ class AzureBlobAdapter(
             .sortedBy(DeletedFile::deletedAt)
     }
 
-    private fun mapToFile(blobDownloadContentResponse: BlobDownloadContentResponse): FilePayload {
+    private fun mapToFile(
+        fileId: UUID,
+        blobDownloadContentResponse: BlobDownloadContentResponse,
+    ): FilePayload {
         val metadata = blobDownloadContentResponse.deserializedHeaders.metadata.orEmpty()
         val value = blobDownloadContentResponse.value
+        val encodedFileName = metadata[METADATA_NAME].orEmpty()
+        val decodedFileName = decodeMetadataValue(encodedFileName)
+
+        log.atDebug {
+            message = "Decoded file metadata for fileId={} encodedMetadataName={} decodedFileName={}"
+            arguments =
+                arrayOf(
+                    fileId,
+                    encodedFileName,
+                    describeFileName(decodedFileName),
+                )
+        }
 
         return FilePayload(
-            name = decodeMetadataValue(metadata[METADATA_NAME].orEmpty()),
+            name = decodedFileName,
             sourceApplicationId = metadata[METADATA_SOURCE_APPLICATION_ID]?.toLongOrNull(),
             sourceApplicationInstanceId = metadata[METADATA_SOURCE_APPLICATION_INSTANCE_ID],
             type = metadata[METADATA_TYPE]?.let(MediaType::valueOf),
             encoding = metadata[METADATA_ENCODING],
             contents = value.toBytes(),
         )
+    }
+
+    private fun describeFileName(fileName: String): String {
+        val visibleFileName =
+            buildString {
+                fileName.forEach { character ->
+                    append(
+                        when (character) {
+                            '\n' -> "\\n"
+                            '\r' -> "\\r"
+                            '\t' -> "\\t"
+                            else -> character
+                        },
+                    )
+                }
+            }
+        val codePoints = fileName.codePoints().toArray().joinToString(" ") { "U+%04X".format(it) }
+
+        return "\"$visibleFileName\" (length=${fileName.length}, codePoints=[$codePoints])"
     }
 
     companion object {
