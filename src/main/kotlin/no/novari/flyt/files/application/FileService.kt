@@ -60,11 +60,20 @@ class FileService(
     }
 
     private fun normalizeFileName(file: FilePayload): FilePayload {
-        val normalizedName = Normalizer.normalize(file.name, Normalizer.Form.NFC)
+        val normalizedName =
+            file.name
+                .trim()
+                .replace(WHITESPACE_BEFORE_EXTENSION_REGEX, "$1")
+                .let { Normalizer.normalize(it, Normalizer.Form.NFC) }
+
         return if (normalizedName == file.name) {
             file
         } else {
             file.copy(name = normalizedName)
         }
+    }
+
+    companion object {
+        private val WHITESPACE_BEFORE_EXTENSION_REGEX = Regex("""\s+(\.[^.\s]+(?:\.[^.\s]+)*)$""")
     }
 }
