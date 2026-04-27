@@ -25,7 +25,19 @@ class FileService(
                 null
             }
         val fileFromStorage = fileFromCache ?: fileRepository.findById(fileId)
-        return fileFromStorage?.let(::normalizeFileName) ?: throw FileNotFoundException(fileId)
+        val normalizedFile = fileFromStorage?.let(::normalizeFileName) ?: throw FileNotFoundException(fileId)
+
+        log.atDebug {
+            message = "Resolved file name for fileId={} raw={} normalized={}"
+            arguments =
+                arrayOf(
+                    fileId,
+                    describeFileName(fileFromStorage.name),
+                    describeFileName(normalizedFile.name),
+                )
+        }
+
+        return normalizedFile
     }
 
     fun put(
@@ -33,6 +45,17 @@ class FileService(
         file: FilePayload,
     ): UUID {
         val normalizedFile = normalizeFileName(file)
+
+        log.atDebug {
+            message = "Preparing file upload for fileId={} raw={} normalized={}"
+            arguments =
+                arrayOf(
+                    fileId,
+                    describeFileName(file.name),
+                    describeFileName(normalizedFile.name),
+                )
+        }
+
         fileCache.put(fileId, normalizedFile)
 
         return try {
@@ -60,11 +83,41 @@ class FileService(
     }
 
     private fun normalizeFileName(file: FilePayload): FilePayload {
-        val normalizedName = Normalizer.normalize(file.name, Normalizer.Form.NFC)
+        val normalizedName =
+            file.name
+                .trim()
+                .replace(WHITESPACE_BEFORE_EXTENSION_REGEX, "$1")
+                .replace(TYPOGRAPHIC_DASHES_REGEX, "-")
+                .let { Normalizer.normalize(it, Normalizer.Form.NFC) }
+
         return if (normalizedName == file.name) {
             file
         } else {
             file.copy(name = normalizedName)
         }
+    }
+
+    companion object {
+        private val WHITESPACE_BEFORE_EXTENSION_REGEX = Regex("""\s+(\.[^.\s]+(?:\.[^.\s]+)*)$""")
+        private val TYPOGRAPHIC_DASHES_REGEX = Regex("[\u2013\u2014]")
+    }
+
+    private fun describeFileName(fileName: String): String {
+        val visibleFileName =
+            buildString {
+                fileName.forEach { character ->
+                    append(
+                        when (character) {
+                            '\n' -> "\\n"
+                            '\r' -> "\\r"
+                            '\t' -> "\\t"
+                            else -> character
+                        },
+                    )
+                }
+            }
+        val codePoints = fileName.codePoints().toArray().joinToString(" ") { "U+%04X".format(it) }
+
+        return "\"$visibleFileName\" (length=${fileName.length}, codePoints=[$codePoints])"
     }
 }

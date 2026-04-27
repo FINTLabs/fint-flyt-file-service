@@ -184,6 +184,19 @@ class FileServiceTest {
     }
 
     @Test
+    fun `findById trims file name removes whitespace before extension and normalizes typographic dash`() {
+        val fileWithWhitespace = file.copy(name = "  Example document – applicant copy .pdf  ")
+        whenever(fileCache.get(fileId)).thenReturn(fileWithWhitespace)
+
+        val result = fileService.findById(fileId)
+
+        assertThat(result.name).isEqualTo("Example document - applicant copy.pdf")
+        verify(fileCache, times(1)).get(fileId)
+        verifyNoMoreInteractions(fileCache)
+        verifyNoInteractions(fileRepository)
+    }
+
+    @Test
     fun `put normalizes file name to nfc before storing`() {
         val decomposedFile = file.copy(name = "lønns arb vilkår st olav rog fylkl.pdf")
         val cachedFileCaptor = argumentCaptor<FilePayload>()
@@ -198,6 +211,24 @@ class FileServiceTest {
         assertThat(storedFileCaptor.firstValue.name).isEqualTo("lønns arb vilkår st olav rog fylkl.pdf")
         verifyNoMoreInteractions(fileCache)
         verify(fileRepository, times(1)).putFile(fileId, storedFileCaptor.firstValue)
+        verifyNoMoreInteractions(fileRepository)
+    }
+
+    @Test
+    fun `put trims file name removes whitespace before extension and normalizes typographic dash`() {
+        val fileWithWhitespace = file.copy(name = "  Example document – applicant copy .pdf  ")
+        val cachedFileCaptor = argumentCaptor<FilePayload>()
+        val storedFileCaptor = argumentCaptor<FilePayload>()
+        whenever(fileRepository.putFile(eq(fileId), storedFileCaptor.capture())).thenReturn(fileId)
+
+        val result = fileService.put(fileId, fileWithWhitespace)
+
+        assertThat(result).isEqualTo(fileId)
+        verify(fileCache, times(1)).put(eq(fileId), cachedFileCaptor.capture())
+        assertThat(cachedFileCaptor.firstValue.name).isEqualTo("Example document - applicant copy.pdf")
+        assertThat(storedFileCaptor.firstValue.name).isEqualTo("Example document - applicant copy.pdf")
+        verify(fileRepository, times(1)).putFile(fileId, storedFileCaptor.firstValue)
+        verifyNoMoreInteractions(fileCache)
         verifyNoMoreInteractions(fileRepository)
     }
 
