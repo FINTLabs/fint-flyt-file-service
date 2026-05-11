@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: bym-oslo-kommune-no
+
+resources:
+  - ../../../base
+
+patches:
+  - patch: |-
+      - op: replace
+        path: "/metadata/labels/app.kubernetes.io~1instance"
+        value: "fint-flyt-file-service_bym-oslo-kommune-no"
+      - op: replace
+        path: "/metadata/labels/fintlabs.no~1org-id"
+        value: "bym.oslo.kommune.no"
+      - op: replace
+        path: "/spec/kafka/acls/0/topic"
+        value: "bym-oslo-kommune-no.flyt.*"
+      - op: replace
+        path: "/spec/orgId"
+        value: "bym.oslo.kommune.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+         name: "novari.kafka.topic.orgId"
+         value: "bym-oslo-kommune-no"
+    target:
+      kind: Application
+      name: fint-flyt-file-service
+
+  - patch: |-
+      - op: replace
+        path: "/metadata/labels/app.kubernetes.io~1instance"
+        value: "fint-flyt-file-service-azure-blob-storage_bym-oslo-kommune-no"
+      - op: replace
+        path: "/metadata/labels/fintlabs.no~1org-id"
+        value: "bym.oslo.kommune.no"
+    target:
+      kind: AzureBlobContainer
+      name: fint-flyt-file-service-azure-blob-storage
