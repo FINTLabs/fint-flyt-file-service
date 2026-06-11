@@ -65,7 +65,7 @@ class InstanceDeletedConsumerConfiguration(
                     .groupIdApplicationDefault()
                     .maxPollRecordsKafkaDefault()
                     .maxPollIntervalKafkaDefault()
-                    .seekToBeginningOnAssignment()
+                    .continueFromPreviousOffsetOnAssignment()
                     .build(),
                 errorHandlerFactory.createErrorHandler(
                     ErrorHandlerConfiguration
