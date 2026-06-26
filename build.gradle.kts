@@ -1,10 +1,10 @@
 plugins {
-    id("org.springframework.boot") version "3.5.13"
+    id("org.springframework.boot") version "3.5.15"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.github.ben-manes.versions") version "0.53.0"
-    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
-    kotlin("jvm") version "2.3.10"
-    kotlin("plugin.spring") version "2.3.10"
+    id("com.github.ben-manes.versions") version "0.54.0"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
+    kotlin("jvm") version "2.4.0"
+    kotlin("plugin.spring") version "2.4.0"
 }
 
 group = "no.novari"
@@ -37,18 +37,17 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("com.google.guava:guava:33.5.0-jre")
-    implementation("com.azure:azure-storage-blob:12.33.2")
+    implementation("com.google.guava:guava:33.6.0-jre")
+    implementation("com.azure:azure-storage-blob:12.35.0")
 
-    implementation("no.novari:flyt-web-resource-server:2.0.0")
-    implementation("no.novari:flyt-kafka:4.0.0")
-    implementation("no.novari:flyt-cache:2.0.0")
+    implementation("no.novari:flyt-web-resource-server:3.1.0")
+    implementation("no.novari:flyt-kafka:7.0.0")
 
     implementation("org.apache.commons:commons-text:1.15.0")
     implementation("org.apache.commons:commons-lang3:3.20.0")
 
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
-    runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.4")
+    runtimeOnly("net.logstash.logback:logstash-logback-encoder:9.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
