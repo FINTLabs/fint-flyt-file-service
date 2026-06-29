@@ -63,12 +63,11 @@ class AzureBlobAdapter(
         val encodedFileName = encodeMetadataValue(file.name)
 
         log.atDebug {
-            message = "Encoding file metadata for fileId={} fileName={} encodedMetadataName={}"
+            message = "Encoded file metadata for fileId={} encodedMetadataNameLength={}"
             arguments =
                 arrayOf(
                     fileId,
-                    describeFileName(file.name),
-                    encodedFileName,
+                    encodedFileName.length,
                 )
         }
 
@@ -187,12 +186,11 @@ class AzureBlobAdapter(
         val decodedFileName = decodeMetadataValue(encodedFileName)
 
         log.atDebug {
-            message = "Decoded file metadata for fileId={} encodedMetadataName={} decodedFileName={}"
+            message = "Decoded file metadata for fileId={} metadataNamePresent={}"
             arguments =
                 arrayOf(
                     fileId,
-                    encodedFileName,
-                    describeFileName(decodedFileName),
+                    encodedFileName.isNotBlank(),
                 )
         }
 
@@ -204,25 +202,6 @@ class AzureBlobAdapter(
             encoding = metadata[METADATA_ENCODING],
             contents = value.toBytes(),
         )
-    }
-
-    private fun describeFileName(fileName: String): String {
-        val visibleFileName =
-            buildString {
-                fileName.forEach { character ->
-                    append(
-                        when (character) {
-                            '\n' -> "\\n"
-                            '\r' -> "\\r"
-                            '\t' -> "\\t"
-                            else -> character
-                        },
-                    )
-                }
-            }
-        val codePoints = fileName.codePoints().toArray().joinToString(" ") { "U+%04X".format(it) }
-
-        return "\"$visibleFileName\" (length=${fileName.length}, codePoints=[$codePoints])"
     }
 
     companion object {

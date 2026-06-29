@@ -44,7 +44,8 @@ Basesti: `/api/intern-klient/filer`
 
 | Metode | Path | Beskrivelse | Respons |
 | --- | --- | --- | --- |
-| `POST` | `/api/intern-klient/filer` | Lagrer en fil og returnerer en generert UUID. | `201 Created` + UUID i responsen |
+| `POST` | `/api/intern-klient/filer` | Lagrer en JSON/Base64-fil og returnerer en generert UUID. | `201 Created` + UUID i responsen |
+| `POST` | `/api/intern-klient/filer` | Lagrer en multipart-fil og returnerer en generert UUID. | `201 Created` + UUID i responsen |
 | `GET` | `/api/intern-klient/filer/{fileId}` | Henter en fil ved hjelp av UUID. | `200 OK` + `FilePayload` |
 
 `FilePayload` (forespørsel/respons):
@@ -61,6 +62,21 @@ Basesti: `/api/intern-klient/filer`
 ```
 
 `contents` er base64 i JSON og mappes internt til `ByteArray`.
+
+Multipart-opplasting bruker `multipart/form-data` med en JSON-del kalt
+`metadata` og en binær fildel kalt `file`.
+
+`metadata`:
+
+```json
+{
+  "name": "example.pdf",
+  "sourceApplicationId": 123,
+  "sourceApplicationInstanceId": "instance-1",
+  "type": "application/pdf",
+  "encoding": "binary"
+}
+```
 
 ## Feilhåndtering
 
@@ -161,4 +177,8 @@ curl -i -X POST "$API" \
     "sourceApplicationInstanceId": "instance-1",
     "contents": "SGVsbG8="
   }'
+
+curl -i -X POST "$API" \
+  -F 'metadata={"name":"test.txt","sourceApplicationId":123,"sourceApplicationInstanceId":"instance-1","type":"text/plain","encoding":"binary"};type=application/json' \
+  -F 'file=@test.txt;type=text/plain'
 ```
