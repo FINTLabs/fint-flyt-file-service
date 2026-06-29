@@ -28,12 +28,11 @@ class FileService(
         val normalizedFile = fileFromStorage?.let(::normalizeFileName) ?: throw FileNotFoundException(fileId)
 
         log.atDebug {
-            message = "Resolved file name for fileId={} raw={} normalized={}"
+            message = "Resolved file metadata for fileId={} normalizedNameChanged={}"
             arguments =
                 arrayOf(
                     fileId,
-                    describeFileName(fileFromStorage.name),
-                    describeFileName(normalizedFile.name),
+                    fileFromStorage.name != normalizedFile.name,
                 )
         }
 
@@ -47,12 +46,11 @@ class FileService(
         val normalizedFile = normalizeFileName(file)
 
         log.atDebug {
-            message = "Preparing file upload for fileId={} raw={} normalized={}"
+            message = "Preparing file upload for fileId={} normalizedNameChanged={}"
             arguments =
                 arrayOf(
                     fileId,
-                    describeFileName(file.name),
-                    describeFileName(normalizedFile.name),
+                    file.name != normalizedFile.name,
                 )
         }
 
@@ -100,24 +98,5 @@ class FileService(
     companion object {
         private val WHITESPACE_BEFORE_EXTENSION_REGEX = Regex("""\s+(\.[^.\s]+(?:\.[^.\s]+)*)$""")
         private val TYPOGRAPHIC_DASHES_REGEX = Regex("[\u2013\u2014]")
-    }
-
-    private fun describeFileName(fileName: String): String {
-        val visibleFileName =
-            buildString {
-                fileName.forEach { character ->
-                    append(
-                        when (character) {
-                            '\n' -> "\\n"
-                            '\r' -> "\\r"
-                            '\t' -> "\\t"
-                            else -> character
-                        },
-                    )
-                }
-            }
-        val codePoints = fileName.codePoints().toArray().joinToString(" ") { "U+%04X".format(it) }
-
-        return "\"$visibleFileName\" (length=${fileName.length}, codePoints=[$codePoints])"
     }
 }
