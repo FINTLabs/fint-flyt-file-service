@@ -3,6 +3,8 @@ fint:
 
 novari:
   flyt:
+    file-service:
+      max-request-size: 1024MB
     web-resource-server:
       security:
         api:
@@ -13,10 +15,13 @@ server:
   error:
     include-message: always
   tomcat:
-    max-swallow-size: 500MB
-    max-http-form-post-size: 500MB
+    max-swallow-size: ${novari.flyt.file-service.max-request-size}
+    max-http-form-post-size: ${novari.flyt.file-service.max-request-size}
 
 spring:
+  http:
+    codecs:
+      max-in-memory-size: ${novari.flyt.file-service.max-request-size}
   profiles:
     include:
       - flyt-kafka
@@ -24,8 +29,8 @@ spring:
       - flyt-web-resource-server
   servlet:
     multipart:
-      max-file-size: 500MB
-      max-request-size: 500MB
+      max-file-size: ${novari.flyt.file-service.max-request-size}
+      max-request-size: ${novari.flyt.file-service.max-request-size}
 
   output:
     ansi:
