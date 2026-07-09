@@ -68,8 +68,8 @@ class FileRepository(
             val deletedFiles = blobStorageAdapter.deleteFilesOlderThanDays(days)
             deletedFiles.forEach { deletedFile ->
                 log.atInfo {
-                    message = "deleted file with name {}, timestamp {}"
-                    arguments = arrayOf(deletedFile.name, deletedFile.deletedAt)
+                    message = "Deleted old file from storage with timestamp {}"
+                    arguments = arrayOf(deletedFile.deletedAt)
                 }
             }
             return deletedFiles.size

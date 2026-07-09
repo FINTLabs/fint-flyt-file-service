@@ -91,7 +91,7 @@ class FileRepositoryTest {
     }
 
     @Test
-    fun `deleteFilesOlderThan returns count and logs deleted files`() {
+    fun `deleteFilesOlderThan returns count and logs deleted files without file names`() {
         val days = 30
         val now = OffsetDateTime.now()
         val deletedFile1 = DeletedFile("fileA.txt", now.minusDays(40))
@@ -104,10 +104,13 @@ class FileRepositoryTest {
 
         assertThat(count).isEqualTo(2)
         assertThat(listAppender.list).anyMatch { event ->
-            event.formattedMessage.contains("deleted file with name fileA.txt, timestamp ${deletedFile1.deletedAt}")
+            event.formattedMessage.contains("Deleted old file from storage with timestamp ${deletedFile1.deletedAt}")
         }
         assertThat(listAppender.list).anyMatch { event ->
-            event.formattedMessage.contains("deleted file with name fileB.txt, timestamp ${deletedFile2.deletedAt}")
+            event.formattedMessage.contains("Deleted old file from storage with timestamp ${deletedFile2.deletedAt}")
+        }
+        assertThat(listAppender.list.map { it.formattedMessage }).noneMatch { message ->
+            message.contains("fileA.txt") || message.contains("fileB.txt")
         }
     }
 }
