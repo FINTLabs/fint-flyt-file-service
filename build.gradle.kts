@@ -40,7 +40,7 @@ dependencies {
     implementation("com.google.guava:guava:33.6.0-jre")
     implementation("com.azure:azure-storage-blob:12.35.0")
 
-    implementation("no.novari:flyt-web-resource-server:3.1.0")
+    implementation("no.novari:flyt-web-resource-server:3.2.0")
     implementation("no.novari:flyt-kafka:7.0.0")
 
     implementation("org.apache.commons:commons-text:1.15.0")
