@@ -1,5 +1,5 @@
 plugins {
-    id("org.springframework.boot") version "3.5.15"
+    id("org.springframework.boot") version "3.5.16"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.ben-manes.versions") version "0.54.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
@@ -41,7 +41,7 @@ dependencies {
     implementation("com.azure:azure-storage-blob:12.35.0")
 
     implementation("no.novari:flyt-web-resource-server:3.2.0")
-    implementation("no.novari:flyt-kafka:7.0.0")
+    implementation("no.novari:flyt-kafka:7.2.0")
 
     implementation("org.apache.commons:commons-text:1.15.0")
     implementation("org.apache.commons:commons-lang3:3.20.0")
