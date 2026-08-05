@@ -41,7 +41,7 @@ dependencies {
     implementation("com.azure:azure-storage-blob:12.35.0")
 
     implementation("no.novari:flyt-cache:3.0.0")
-    implementation("no.novari:flyt-web-resource-server:4.0.0-rc-1")
+    implementation("no.novari:flyt-web-resource-server:4.0.0-rc-2")
     implementation("no.novari:flyt-kafka:7.2.0")
 
     implementation("org.apache.commons:commons-text:1.15.0")
