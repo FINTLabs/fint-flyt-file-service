@@ -4,14 +4,19 @@ import com.azure.storage.blob.BlobClient
 import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.models.BlobProperties
 import com.azure.storage.blob.models.BlobStorageException
+import com.azure.storage.blob.options.BlobInputStreamOptions
 import com.azure.storage.blob.specialized.BlobInputStream
 import org.apache.commons.text.StringEscapeUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
+import org.springframework.http.InvalidMediaTypeException
 import org.springframework.http.MediaType
 import org.springframework.test.util.ReflectionTestUtils
 import java.util.UUID
@@ -28,7 +33,7 @@ class AzureBlobAdapterTest {
         ReflectionTestUtils.setField(adapter, "blobContainerClient", blobContainerClient)
 
         whenever(blobContainerClient.getBlobClient(fileId.toString())).thenReturn(blobClient)
-        whenever(blobClient.openInputStream()).thenReturn(contents)
+        whenever(blobClient.openInputStream(any<BlobInputStreamOptions>())).thenReturn(contents)
         whenever(contents.properties).thenReturn(properties)
         whenever(properties.metadata).thenReturn(
             mapOf(
@@ -48,7 +53,7 @@ class AzureBlobAdapterTest {
         assertThat(result?.metadata?.type).isEqualTo(MediaType.APPLICATION_PDF)
         assertThat(result?.metadata?.encoding).isEqualTo("binary")
         assertThat(result?.contents).isSameAs(contents)
-        verify(blobClient).openInputStream()
+        assertInputStreamOptions(blobClient)
     }
 
     @Test
@@ -62,12 +67,40 @@ class AzureBlobAdapterTest {
 
         whenever(blobContainerClient.getBlobClient(fileId.toString())).thenReturn(blobClient)
         whenever(notFound.statusCode).thenReturn(HttpStatus.NOT_FOUND.value())
-        whenever(blobClient.openInputStream()).thenThrow(notFound)
+        whenever(blobClient.openInputStream(any<BlobInputStreamOptions>())).thenThrow(notFound)
 
         val result = adapter.openDownload(fileId)
 
         assertThat(result).isNull()
-        verify(blobClient).openInputStream()
+        assertInputStreamOptions(blobClient)
+    }
+
+    @Test
+    fun `openDownload closes stream when metadata mapping fails`() {
+        val fileId = UUID.fromString("05bd0291-6c35-4888-984e-06ee656ff9dd")
+        val blobContainerClient = mock<BlobContainerClient>()
+        val blobClient = mock<BlobClient>()
+        val contents = mock<BlobInputStream>()
+        val properties = mock<BlobProperties>()
+        val adapter = AzureBlobAdapter("connection-string", "container")
+        ReflectionTestUtils.setField(adapter, "blobContainerClient", blobContainerClient)
+
+        whenever(blobContainerClient.getBlobClient(fileId.toString())).thenReturn(blobClient)
+        whenever(blobClient.openInputStream(any<BlobInputStreamOptions>())).thenReturn(contents)
+        whenever(contents.properties).thenReturn(properties)
+        whenever(properties.metadata).thenReturn(
+            mapOf(
+                "name" to encodeMetadataValue("document.pdf"),
+                "type" to "not a media type",
+            ),
+        )
+
+        assertThrows<InvalidMediaTypeException> {
+            adapter.openDownload(fileId)
+        }
+
+        verify(contents).close()
+        assertInputStreamOptions(blobClient)
     }
 
     @Test
@@ -95,5 +128,13 @@ class AzureBlobAdapterTest {
         val encoded = encodeMetadataValue(filename)
 
         assertThat(decodeMetadataValue(encoded)).isEqualTo(filename)
+    }
+
+    private fun assertInputStreamOptions(blobClient: BlobClient) {
+        val optionsCaptor = argumentCaptor<BlobInputStreamOptions>()
+
+        verify(blobClient).openInputStream(optionsCaptor.capture())
+
+        assertThat(optionsCaptor.firstValue.blockSize).isEqualTo(2 * 1024 * 1024)
     }
 }

@@ -19,9 +19,14 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.context.request.NativeWebRequest
+import org.springframework.web.context.request.async.CallableProcessingInterceptor
+import org.springframework.web.context.request.async.WebAsyncUtils
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 import java.util.UUID
+import java.util.concurrent.Callable
+import java.util.concurrent.atomic.AtomicBoolean
 
 @RestController
 @RequestMapping("$INTERNAL_CLIENT_API/filer")
@@ -32,18 +37,28 @@ class FileController(
     @GetMapping("{fileId}", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun get(
         @PathVariable fileId: UUID,
+        webRequest: NativeWebRequest,
     ): ResponseEntity<StreamingResponseBody> {
         val fileDownload = fileService.openDownload(fileId)
+        val contentsClosed = AtomicBoolean(false)
+        val closeContents = {
+            if (contentsClosed.compareAndSet(false, true)) {
+                fileDownload.contents.close()
+            }
+        }
+        registerAsyncCleanup(webRequest, fileId, closeContents)
 
         return ResponseEntity
             .ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(
                 StreamingResponseBody { outputStream ->
-                    fileDownload.contents.use {
+                    try {
                         objectMapper.factory.createGenerator(outputStream).use { generator ->
                             writeFileDownload(generator, fileDownload)
                         }
+                    } finally {
+                        closeContents()
                     }
                 },
             )
@@ -83,5 +98,42 @@ class FileController(
         generator.writeFieldName("contents")
         generator.writeBinary(fileDownload.contents, -1)
         generator.writeEndObject()
+    }
+
+    private fun registerAsyncCleanup(
+        webRequest: NativeWebRequest,
+        fileId: UUID,
+        closeContents: () -> Unit,
+    ) {
+        WebAsyncUtils
+            .getAsyncManager(webRequest)
+            .registerCallableInterceptor(
+                "fileDownload-$fileId",
+                object : CallableProcessingInterceptor {
+                    override fun <T> handleTimeout(
+                        request: NativeWebRequest,
+                        task: Callable<T>,
+                    ): Any {
+                        closeContents()
+                        return CallableProcessingInterceptor.RESULT_NONE
+                    }
+
+                    override fun <T> handleError(
+                        request: NativeWebRequest,
+                        task: Callable<T>,
+                        throwable: Throwable,
+                    ): Any {
+                        closeContents()
+                        return CallableProcessingInterceptor.RESULT_NONE
+                    }
+
+                    override fun <T> afterCompletion(
+                        request: NativeWebRequest,
+                        task: Callable<T>,
+                    ) {
+                        closeContents()
+                    }
+                },
+            )
     }
 }

@@ -46,6 +46,7 @@ class FileControllerTest {
     @Test
     fun `get streams JSON base64 file payload`() {
         val fileId = UUID.fromString("f4dc9501-9af0-4e5d-a8a4-064b3d615d52")
+        val contents = CloseTrackingInputStream(byteArrayOf(1, 2, 3))
         val fileDownload =
             FileDownload(
                 metadata =
@@ -56,7 +57,7 @@ class FileControllerTest {
                         type = MediaType.APPLICATION_PDF,
                         encoding = "binary",
                     ),
-                contents = ByteArrayInputStream(byteArrayOf(1, 2, 3)),
+                contents = contents,
             )
         whenever(fileService.openDownload(fileId)).thenReturn(fileDownload)
 
@@ -84,6 +85,7 @@ class FileControllerTest {
                     """.trimIndent(),
                 ),
             )
+        assertThat(contents.closed).isTrue()
     }
 
     @Test
@@ -197,5 +199,17 @@ class FileControllerTest {
 
     private companion object {
         private const val PATH = "/api/intern-klient/filer"
+    }
+
+    private class CloseTrackingInputStream(
+        bytes: ByteArray,
+    ) : ByteArrayInputStream(bytes) {
+        var closed = false
+            private set
+
+        override fun close() {
+            closed = true
+            super.close()
+        }
     }
 }

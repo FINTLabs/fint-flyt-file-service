@@ -10,7 +10,10 @@ import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.azure.storage.blob.models.ListBlobsOptions
 import com.azure.storage.blob.models.ParallelTransferOptions
+import com.azure.storage.blob.options.BlobInputStreamOptions
 import com.azure.storage.blob.options.BlobParallelUploadOptions
+import com.azure.storage.common.policy.RequestRetryOptions
+import com.azure.storage.common.policy.RetryPolicyType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PostConstruct
 import no.novari.flyt.files.domain.DeletedFile
@@ -25,6 +28,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
+import java.time.Duration
 import java.time.OffsetDateTime
 import java.util.Base64
 import java.util.UUID
@@ -45,7 +49,16 @@ class AzureBlobAdapter(
         val blobServiceClient =
             BlobServiceClientBuilder()
                 .connectionString(connectionString)
-                .buildClient()
+                .retryOptions(
+                    RequestRetryOptions(
+                        RetryPolicyType.EXPONENTIAL,
+                        REQUEST_MAX_TRIES_INCLUDING_INITIAL,
+                        null as Duration?,
+                        null as Duration?,
+                        null as Duration?,
+                        null,
+                    ),
+                ).buildClient()
         blobContainerClient = blobServiceClient.getBlobContainerClient(containerName)
 
         if (!blobContainerClient.exists()) {
@@ -104,7 +117,10 @@ class AzureBlobAdapter(
         val blobClient = blobContainerClient.getBlobClient(fileId.toString())
 
         return try {
-            val contents = blobClient.openInputStream()
+            val contents =
+                blobClient.openInputStream(
+                    BlobInputStreamOptions().setBlockSize(BLOCK_SIZE.toInt()),
+                )
             val metadata =
                 try {
                     mapToMetadata(fileId, contents.properties.metadata.orEmpty())
@@ -198,6 +214,7 @@ class AzureBlobAdapter(
 
     companion object {
         private const val BLOCK_SIZE = 2L * 1024L * 1024L
+        private const val REQUEST_MAX_TRIES_INCLUDING_INITIAL = 4
         private const val METADATA_NAME = "name"
         private const val METADATA_TYPE = "type"
         private const val METADATA_ENCODING = "encoding"
