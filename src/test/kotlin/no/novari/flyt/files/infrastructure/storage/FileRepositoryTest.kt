@@ -4,10 +4,14 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import no.novari.flyt.files.domain.DeletedFile
+import no.novari.flyt.files.domain.FileDownload
+import no.novari.flyt.files.domain.FileMetadata
 import no.novari.flyt.files.domain.FilePayload
+import no.novari.flyt.files.domain.exception.FileStorageException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
@@ -17,6 +21,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayInputStream
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -55,20 +60,56 @@ class FileRepositoryTest {
     }
 
     @Test
-    fun `findById returns file and logs success`() {
+    fun `openDownload returns file download and logs success`() {
         val fileId = UUID.randomUUID()
-        val file = mock<FilePayload>()
+        val fileDownload =
+            FileDownload(
+                metadata = FileMetadata(name = "document.pdf"),
+                contents = ByteArrayInputStream(byteArrayOf(1, 2, 3)),
+            )
 
-        whenever(blobStorageAdapter.downloadFile(eq(fileId))).thenReturn(file)
+        whenever(blobStorageAdapter.openDownload(eq(fileId))).thenReturn(fileDownload)
 
-        val result = fileRepository.findById(fileId)
+        val result = fileRepository.openDownload(fileId)
 
-        assertThat(result).isEqualTo(file)
-        verify(blobStorageAdapter).downloadFile(fileId)
+        assertThat(result).isSameAs(fileDownload)
+        verify(blobStorageAdapter).openDownload(fileId)
         assertThat(listAppender.list)
             .anyMatch { event ->
                 event.formattedMessage.contains("Successfully found File{fileId=$fileId}")
             }
+    }
+
+    @Test
+    fun `openDownload returns null and logs missing file`() {
+        val fileId = UUID.randomUUID()
+
+        whenever(blobStorageAdapter.openDownload(eq(fileId))).thenReturn(null)
+
+        val result = fileRepository.openDownload(fileId)
+
+        assertThat(result).isNull()
+        verify(blobStorageAdapter).openDownload(fileId)
+        assertThat(listAppender.list)
+            .anyMatch { event ->
+                event.formattedMessage.contains("Could not find File{fileId=$fileId}")
+            }
+    }
+
+    @Test
+    fun `openDownload wraps storage errors`() {
+        val fileId = UUID.randomUUID()
+        val storageException = RuntimeException("Storage error")
+        whenever(blobStorageAdapter.openDownload(eq(fileId))).thenThrow(storageException)
+
+        val result =
+            assertThrows<FileStorageException> {
+                fileRepository.openDownload(fileId)
+            }
+
+        assertThat(result).hasMessage("Could not open file download")
+        assertThat(result.cause).isSameAs(storageException)
+        verify(blobStorageAdapter).openDownload(fileId)
     }
 
     @Test

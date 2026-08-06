@@ -4,13 +4,10 @@ import com.azure.core.util.BinaryData
 import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClientBuilder
 import com.azure.storage.blob.models.AccessTier
-import com.azure.storage.blob.models.BlobDownloadContentResponse
 import com.azure.storage.blob.models.BlobHttpHeaders
 import com.azure.storage.blob.models.BlobListDetails
-import com.azure.storage.blob.models.BlobRequestConditions
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
-import com.azure.storage.blob.models.DownloadRetryOptions
 import com.azure.storage.blob.models.ListBlobsOptions
 import com.azure.storage.blob.models.ParallelTransferOptions
 import com.azure.storage.blob.options.BlobParallelUploadOptions
@@ -103,43 +100,20 @@ class AzureBlobAdapter(
         return fileId
     }
 
-    override fun downloadFile(fileId: UUID): FilePayload? {
-        val blobClient = blobContainerClient.getBlobClient(fileId.toString())
-        val options = DownloadRetryOptions().setMaxRetryRequests(3)
-
-        return try {
-            val response =
-                blobClient.downloadContentWithResponse(
-                    options,
-                    BlobRequestConditions(),
-                    null,
-                    null,
-                )
-
-            when (response.statusCode) {
-                HttpStatus.OK.value() -> mapToFile(fileId, response)
-                HttpStatus.NOT_FOUND.value() -> null
-                else -> throw RuntimeException("Received response that was not 200 OK: $response")
-            }
-        } catch (exception: BlobStorageException) {
-            if (exception.statusCode == HttpStatus.NOT_FOUND.value()) {
-                null
-            } else {
-                throw exception
-            }
-        }
-    }
-
     override fun openDownload(fileId: UUID): FileDownload? {
         val blobClient = blobContainerClient.getBlobClient(fileId.toString())
 
         return try {
-            val properties = blobClient.properties
-            val metadata = mapToMetadata(fileId, properties.metadata.orEmpty())
+            val contents = blobClient.openInputStream()
+            val metadata =
+                try {
+                    mapToMetadata(fileId, contents.properties.metadata.orEmpty())
+                } catch (exception: Exception) {
+                    contents.close()
+                    throw exception
+                }
 
-            FileDownload(metadata) {
-                blobClient.openInputStream()
-            }
+            FileDownload(metadata, contents)
         } catch (exception: BlobStorageException) {
             if (exception.statusCode == HttpStatus.NOT_FOUND.value()) {
                 null
@@ -195,24 +169,6 @@ class AzureBlobAdapter(
                 DeletedFile(name, lastModified)
             }.toList()
             .sortedBy(DeletedFile::deletedAt)
-    }
-
-    private fun mapToFile(
-        fileId: UUID,
-        blobDownloadContentResponse: BlobDownloadContentResponse,
-    ): FilePayload {
-        val metadata = blobDownloadContentResponse.deserializedHeaders.metadata.orEmpty()
-        val value = blobDownloadContentResponse.value
-        val fileMetadata = mapToMetadata(fileId, metadata)
-
-        return FilePayload(
-            name = fileMetadata.name,
-            sourceApplicationId = fileMetadata.sourceApplicationId,
-            sourceApplicationInstanceId = fileMetadata.sourceApplicationInstanceId,
-            type = fileMetadata.type,
-            encoding = fileMetadata.encoding,
-            contents = value.toBytes(),
-        )
     }
 
     private fun mapToMetadata(

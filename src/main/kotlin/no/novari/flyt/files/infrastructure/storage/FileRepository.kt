@@ -31,25 +31,6 @@ class FileRepository(
         }
     }
 
-    fun findById(fileId: UUID): FilePayload? {
-        return try {
-            val filePayload = blobStorageAdapter.downloadFile(fileId)
-            if (filePayload != null) {
-                logSuccessfulAction(fileId, "found")
-            } else {
-                logUnsuccessfulAction(fileId, "find")
-            }
-            filePayload
-        } catch (exception: Exception) {
-            log.atError {
-                message = "Could not download file with fileId={}"
-                arguments = arrayOf(fileId)
-                cause = exception
-            }
-            throw FileStorageException("Could not download file", exception)
-        }
-    }
-
     fun openDownload(fileId: UUID): FileDownload? {
         return try {
             val fileDownload = blobStorageAdapter.openDownload(fileId)

@@ -25,15 +25,6 @@ class InMemoryBlobAdapter : BlobStorageAdapter {
         return fileId
     }
 
-    override fun downloadFile(fileId: UUID): FilePayload? {
-        val storedFile = files[fileId]
-        if (storedFile == null) {
-            return null
-        }
-
-        return copyPayload(storedFile.payload)
-    }
-
     override fun openDownload(fileId: UUID): FileDownload? {
         val storedFile = files[fileId] ?: return null
         val payload = storedFile.payload
@@ -47,9 +38,7 @@ class InMemoryBlobAdapter : BlobStorageAdapter {
                     type = payload.type,
                     encoding = payload.encoding,
                 ),
-            openContents = {
-                ByteArrayInputStream(payload.contents.copyOf())
-            },
+            contents = ByteArrayInputStream(payload.contents.copyOf()),
         )
     }
 

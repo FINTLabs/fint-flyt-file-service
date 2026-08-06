@@ -1,8 +1,6 @@
 package no.novari.flyt.files.application
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.novari.cache.FintCache
-import no.novari.cache.exceptions.NoSuchCacheEntryException
 import no.novari.flyt.files.domain.FileDownload
 import no.novari.flyt.files.domain.FileMetadata
 import no.novari.flyt.files.domain.FilePayload
@@ -14,32 +12,9 @@ import java.util.UUID
 
 @Service
 class FileService(
-    private val fileCache: FintCache<UUID, FilePayload>,
     private val fileRepository: FileRepository,
 ) {
     private val log = KotlinLogging.logger {}
-
-    fun findById(fileId: UUID): FilePayload {
-        val fileFromCache =
-            try {
-                fileCache.get(fileId)
-            } catch (_: NoSuchCacheEntryException) {
-                null
-            }
-        val fileFromStorage = fileFromCache ?: fileRepository.findById(fileId)
-        val normalizedFile = fileFromStorage?.let(::normalizeFileName) ?: throw FileNotFoundException(fileId)
-
-        log.atDebug {
-            message = "Resolved file metadata for fileId={} normalizedNameChanged={}"
-            arguments =
-                arrayOf(
-                    fileId,
-                    fileFromStorage.name != normalizedFile.name,
-                )
-        }
-
-        return normalizedFile
-    }
 
     fun openDownload(fileId: UUID): FileDownload {
         val fileDownload = fileRepository.openDownload(fileId) ?: throw FileNotFoundException(fileId)
@@ -54,7 +29,7 @@ class FileService(
                 )
         }
 
-        return fileDownload.copy(metadata = normalizedMetadata)
+        return FileDownload(normalizedMetadata, fileDownload.contents)
     }
 
     fun put(
@@ -72,14 +47,7 @@ class FileService(
                 )
         }
 
-        fileCache.put(fileId, normalizedFile)
-
-        return try {
-            fileRepository.putFile(fileId, normalizedFile)
-        } catch (exception: Exception) {
-            fileCache.remove(fileId)
-            throw exception
-        }
+        return fileRepository.putFile(fileId, normalizedFile)
     }
 
     fun delete(fileIds: List<UUID>) {
@@ -90,7 +58,6 @@ class FileService(
             return
         }
 
-        fileCache.remove(fileIds)
         fileRepository.deleteFiles(fileIds)
     }
 

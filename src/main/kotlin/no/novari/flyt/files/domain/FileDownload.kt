@@ -2,7 +2,7 @@ package no.novari.flyt.files.domain
 
 import java.io.InputStream
 
-data class FileDownload(
+class FileDownload(
     val metadata: FileMetadata,
-    val openContents: () -> InputStream,
+    val contents: InputStream,
 )

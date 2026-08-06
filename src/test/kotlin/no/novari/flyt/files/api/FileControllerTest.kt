@@ -56,9 +56,7 @@ class FileControllerTest {
                         type = MediaType.APPLICATION_PDF,
                         encoding = "binary",
                     ),
-                openContents = {
-                    ByteArrayInputStream(byteArrayOf(1, 2, 3))
-                },
+                contents = ByteArrayInputStream(byteArrayOf(1, 2, 3)),
             )
         whenever(fileService.openDownload(fileId)).thenReturn(fileDownload)
 
@@ -81,6 +79,42 @@ class FileControllerTest {
                       "sourceApplicationInstanceId": "instance-1",
                       "type": "application/pdf",
                       "encoding": "binary",
+                      "contents": "AQID"
+                    }
+                    """.trimIndent(),
+                ),
+            )
+    }
+
+    @Test
+    fun `get preserves explicit null metadata fields`() {
+        val fileId = UUID.fromString("f701c634-30ca-4d49-85f7-b85ae89d2f00")
+        val fileDownload =
+            FileDownload(
+                metadata = FileMetadata(name = "document.pdf"),
+                contents = ByteArrayInputStream(byteArrayOf(1, 2, 3)),
+            )
+        whenever(fileService.openDownload(fileId)).thenReturn(fileDownload)
+
+        val mvcResult =
+            mockMvc
+                .perform(get("$PATH/$fileId"))
+                .andExpect(request().asyncStarted())
+                .andReturn()
+
+        mockMvc
+            .perform(asyncDispatch(mvcResult))
+            .andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(
+                content().json(
+                    """
+                    {
+                      "name": "document.pdf",
+                      "sourceApplicationId": null,
+                      "sourceApplicationInstanceId": null,
+                      "type": null,
+                      "encoding": null,
                       "contents": "AQID"
                     }
                     """.trimIndent(),

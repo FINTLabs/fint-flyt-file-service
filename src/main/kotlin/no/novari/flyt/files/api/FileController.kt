@@ -2,6 +2,7 @@ package no.novari.flyt.files.api
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import jakarta.validation.Valid
 import no.novari.flyt.files.application.FileService
 import no.novari.flyt.files.domain.FileDownload
@@ -39,8 +40,10 @@ class FileController(
             .contentType(MediaType.APPLICATION_JSON)
             .body(
                 StreamingResponseBody { outputStream ->
-                    objectMapper.factory.createGenerator(outputStream).use { generator ->
-                        writeFileDownload(generator, fileDownload)
+                    fileDownload.contents.use {
+                        objectMapper.factory.createGenerator(outputStream).use { generator ->
+                            writeFileDownload(generator, fileDownload)
+                        }
                     }
                 },
             )
@@ -72,19 +75,13 @@ class FileController(
         val metadata = fileDownload.metadata
 
         generator.writeStartObject()
-        generator.writeStringField("name", metadata.name)
-        generator.writeFieldName("sourceApplicationId")
-        metadata.sourceApplicationId?.let(generator::writeNumber) ?: generator.writeNull()
-        generator.writeFieldName("sourceApplicationInstanceId")
-        metadata.sourceApplicationInstanceId?.let(generator::writeString) ?: generator.writeNull()
-        generator.writeFieldName("type")
-        metadata.type?.toString()?.let(generator::writeString) ?: generator.writeNull()
-        generator.writeFieldName("encoding")
-        metadata.encoding?.let(generator::writeString) ?: generator.writeNull()
-        generator.writeFieldName("contents")
-        fileDownload.openContents().use { contents ->
-            generator.writeBinary(contents, -1)
+        val metadataFields = objectMapper.valueToTree<ObjectNode>(metadata).properties()
+        for (field in metadataFields) {
+            generator.writeFieldName(field.key)
+            generator.writeTree(field.value)
         }
+        generator.writeFieldName("contents")
+        generator.writeBinary(fileDownload.contents, -1)
         generator.writeEndObject()
     }
 }

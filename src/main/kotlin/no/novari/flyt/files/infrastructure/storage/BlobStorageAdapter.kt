@@ -11,8 +11,6 @@ interface BlobStorageAdapter {
         file: FilePayload,
     ): UUID
 
-    fun downloadFile(fileId: UUID): FilePayload?
-
     fun openDownload(fileId: UUID): FileDownload?
 
     fun deleteFilesByIds(fileIds: List<UUID>)
