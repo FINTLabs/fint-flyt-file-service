@@ -3,6 +3,8 @@ package no.novari.flyt.files.application
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.novari.cache.FintCache
 import no.novari.cache.exceptions.NoSuchCacheEntryException
+import no.novari.flyt.files.domain.FileDownload
+import no.novari.flyt.files.domain.FileMetadata
 import no.novari.flyt.files.domain.FilePayload
 import no.novari.flyt.files.domain.exception.FileNotFoundException
 import no.novari.flyt.files.infrastructure.storage.FileRepository
@@ -37,6 +39,22 @@ class FileService(
         }
 
         return normalizedFile
+    }
+
+    fun openDownload(fileId: UUID): FileDownload {
+        val fileDownload = fileRepository.openDownload(fileId) ?: throw FileNotFoundException(fileId)
+        val normalizedMetadata = normalizeFileName(fileDownload.metadata)
+
+        log.atDebug {
+            message = "Resolved file metadata for fileId={} normalizedNameChanged={}"
+            arguments =
+                arrayOf(
+                    fileId,
+                    fileDownload.metadata.name != normalizedMetadata.name,
+                )
+        }
+
+        return fileDownload.copy(metadata = normalizedMetadata)
     }
 
     fun put(
@@ -80,19 +98,32 @@ class FileService(
         return fileRepository.deleteFilesOlderThan(days)
     }
 
-    private fun normalizeFileName(file: FilePayload): FilePayload {
-        val normalizedName =
-            file.name
-                .trim()
-                .replace(WHITESPACE_BEFORE_EXTENSION_REGEX, "$1")
-                .replace(TYPOGRAPHIC_DASHES_REGEX, "-")
-                .let { Normalizer.normalize(it, Normalizer.Form.NFC) }
+    private fun normalizeFileName(file: FileMetadata): FileMetadata {
+        val normalizedName = normalizeFileName(file.name)
 
         return if (normalizedName == file.name) {
             file
         } else {
             file.copy(name = normalizedName)
         }
+    }
+
+    private fun normalizeFileName(file: FilePayload): FilePayload {
+        val normalizedName = normalizeFileName(file.name)
+
+        return if (normalizedName == file.name) {
+            file
+        } else {
+            file.copy(name = normalizedName)
+        }
+    }
+
+    private fun normalizeFileName(fileName: String): String {
+        return fileName
+            .trim()
+            .replace(WHITESPACE_BEFORE_EXTENSION_REGEX, "$1")
+            .replace(TYPOGRAPHIC_DASHES_REGEX, "-")
+            .let { Normalizer.normalize(it, Normalizer.Form.NFC) }
     }
 
     companion object {

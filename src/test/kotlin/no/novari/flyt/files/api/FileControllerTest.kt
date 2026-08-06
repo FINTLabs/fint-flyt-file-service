@@ -2,6 +2,8 @@ package no.novari.flyt.files.api
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.novari.flyt.files.application.FileService
+import no.novari.flyt.files.domain.FileDownload
+import no.novari.flyt.files.domain.FileMetadata
 import no.novari.flyt.files.domain.FilePayload
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -15,11 +17,15 @@ import org.springframework.http.MediaType
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.request
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import java.io.ByteArrayInputStream
 import java.util.UUID
 
 class FileControllerTest {
@@ -32,9 +38,54 @@ class FileControllerTest {
         fileService = mock()
         mockMvc =
             MockMvcBuilders
-                .standaloneSetup(FileController(fileService))
+                .standaloneSetup(FileController(fileService, objectMapper))
                 .setMessageConverters(MappingJackson2HttpMessageConverter(objectMapper))
                 .build()
+    }
+
+    @Test
+    fun `get streams JSON base64 file payload`() {
+        val fileId = UUID.fromString("f4dc9501-9af0-4e5d-a8a4-064b3d615d52")
+        val fileDownload =
+            FileDownload(
+                metadata =
+                    FileMetadata(
+                        name = "document.pdf",
+                        sourceApplicationId = 123L,
+                        sourceApplicationInstanceId = "instance-1",
+                        type = MediaType.APPLICATION_PDF,
+                        encoding = "binary",
+                    ),
+                openContents = {
+                    ByteArrayInputStream(byteArrayOf(1, 2, 3))
+                },
+            )
+        whenever(fileService.openDownload(fileId)).thenReturn(fileDownload)
+
+        val mvcResult =
+            mockMvc
+                .perform(get("$PATH/$fileId"))
+                .andExpect(request().asyncStarted())
+                .andReturn()
+
+        mockMvc
+            .perform(asyncDispatch(mvcResult))
+            .andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(
+                content().json(
+                    """
+                    {
+                      "name": "document.pdf",
+                      "sourceApplicationId": 123,
+                      "sourceApplicationInstanceId": "instance-1",
+                      "type": "application/pdf",
+                      "encoding": "binary",
+                      "contents": "AQID"
+                    }
+                    """.trimIndent(),
+                ),
+            )
     }
 
     @Test

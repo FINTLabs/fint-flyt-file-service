@@ -17,6 +17,8 @@ import com.azure.storage.blob.options.BlobParallelUploadOptions
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PostConstruct
 import no.novari.flyt.files.domain.DeletedFile
+import no.novari.flyt.files.domain.FileDownload
+import no.novari.flyt.files.domain.FileMetadata
 import no.novari.flyt.files.domain.FilePayload
 import no.novari.flyt.files.infrastructure.storage.BlobStorageAdapter
 import org.apache.commons.text.StringEscapeUtils
@@ -128,6 +130,25 @@ class AzureBlobAdapter(
         }
     }
 
+    override fun openDownload(fileId: UUID): FileDownload? {
+        val blobClient = blobContainerClient.getBlobClient(fileId.toString())
+
+        return try {
+            val properties = blobClient.properties
+            val metadata = mapToMetadata(fileId, properties.metadata.orEmpty())
+
+            FileDownload(metadata) {
+                blobClient.openInputStream()
+            }
+        } catch (exception: BlobStorageException) {
+            if (exception.statusCode == HttpStatus.NOT_FOUND.value()) {
+                null
+            } else {
+                throw exception
+            }
+        }
+    }
+
     override fun deleteFilesByIds(fileIds: List<UUID>) {
         fileIds
             .asSequence()
@@ -182,6 +203,22 @@ class AzureBlobAdapter(
     ): FilePayload {
         val metadata = blobDownloadContentResponse.deserializedHeaders.metadata.orEmpty()
         val value = blobDownloadContentResponse.value
+        val fileMetadata = mapToMetadata(fileId, metadata)
+
+        return FilePayload(
+            name = fileMetadata.name,
+            sourceApplicationId = fileMetadata.sourceApplicationId,
+            sourceApplicationInstanceId = fileMetadata.sourceApplicationInstanceId,
+            type = fileMetadata.type,
+            encoding = fileMetadata.encoding,
+            contents = value.toBytes(),
+        )
+    }
+
+    private fun mapToMetadata(
+        fileId: UUID,
+        metadata: Map<String, String>,
+    ): FileMetadata {
         val encodedFileName = metadata[METADATA_NAME].orEmpty()
         val decodedFileName = decodeMetadataValue(encodedFileName)
 
@@ -194,13 +231,12 @@ class AzureBlobAdapter(
                 )
         }
 
-        return FilePayload(
+        return FileMetadata(
             name = decodedFileName,
             sourceApplicationId = metadata[METADATA_SOURCE_APPLICATION_ID]?.toLongOrNull(),
             sourceApplicationInstanceId = metadata[METADATA_SOURCE_APPLICATION_INSTANCE_ID],
             type = metadata[METADATA_TYPE]?.let(MediaType::valueOf),
             encoding = metadata[METADATA_ENCODING],
-            contents = value.toBytes(),
         )
     }
 
