@@ -22,6 +22,9 @@ spring:
   http:
     codecs:
       max-in-memory-size: ${novari.flyt.file-service.max-request-size}
+  mvc:
+    async:
+      request-timeout: 30m
   profiles:
     include:
       - flyt-kafka

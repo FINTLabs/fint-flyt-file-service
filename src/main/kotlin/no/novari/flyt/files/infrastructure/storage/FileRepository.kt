@@ -1,6 +1,7 @@
 package no.novari.flyt.files.infrastructure.storage
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.novari.flyt.files.domain.FileDownload
 import no.novari.flyt.files.domain.FilePayload
 import no.novari.flyt.files.domain.exception.FileStorageException
 import org.springframework.stereotype.Repository
@@ -30,22 +31,22 @@ class FileRepository(
         }
     }
 
-    fun findById(fileId: UUID): FilePayload? {
+    fun openDownload(fileId: UUID): FileDownload? {
         return try {
-            val filePayload = blobStorageAdapter.downloadFile(fileId)
-            if (filePayload != null) {
+            val fileDownload = blobStorageAdapter.openDownload(fileId)
+            if (fileDownload != null) {
                 logSuccessfulAction(fileId, "found")
             } else {
                 logUnsuccessfulAction(fileId, "find")
             }
-            filePayload
+            fileDownload
         } catch (exception: Exception) {
             log.atError {
-                message = "Could not download file with fileId={}"
+                message = "Could not open file download with fileId={}"
                 arguments = arrayOf(fileId)
                 cause = exception
             }
-            throw FileStorageException("Could not download file", exception)
+            throw FileStorageException("Could not open file download", exception)
         }
     }
 

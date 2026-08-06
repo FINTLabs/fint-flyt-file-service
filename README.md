@@ -2,8 +2,8 @@
 
 Kotlin-basert Spring Boot-tjeneste for opplasting og henting av filer i Flyt.
 Tjenesten eksponerer et internt HTTP-API, lagrer filer i utskiftbar lagring
-(Azure i produksjon, i minne lokalt), bruker cache for raske oppslag og sletter
-filer både gjennom planlagte jobber og Kafka-hendelser.
+(Azure i produksjon, i minne lokalt) og sletter filer både gjennom planlagte
+jobber og Kafka-hendelser.
 
 ## Høydepunkter
 
@@ -18,7 +18,7 @@ filer både gjennom planlagte jobber og Kafka-hendelser.
 | Komponent | Ansvar |
 | --- | --- |
 | `FileController` | Endepunkter for `POST` og `GET` av filer. |
-| `FileService` | Forretningsflyt, cache-oppslag og fallback til repository. |
+| `FileService` | Forretningsflyt og filnavn-normalisering. |
 | `FileRepository` | Lagringsoperasjoner gjennom `BlobStorageAdapter`. |
 | `BlobStorageAdapter` | Lagringsabstraksjon (port). |
 | `AzureBlobAdapter` | Azure Blob-implementasjon (`!local-staging`). |
@@ -46,7 +46,7 @@ Basesti: `/api/intern-klient/filer`
 | --- | --- | --- | --- |
 | `POST` | `/api/intern-klient/filer` | Lagrer en JSON/Base64-fil og returnerer en generert UUID. | `201 Created` + UUID i responsen |
 | `POST` | `/api/intern-klient/filer` | Lagrer en multipart-fil og returnerer en generert UUID. | `201 Created` + UUID i responsen |
-| `GET` | `/api/intern-klient/filer/{fileId}` | Henter en fil ved hjelp av UUID. | `200 OK` + `FilePayload` |
+| `GET` | `/api/intern-klient/filer/{fileId}` | Henter en fil ved hjelp av UUID. | `200 OK` + streamet `FilePayload` |
 
 `FilePayload` (forespørsel/respons):
 

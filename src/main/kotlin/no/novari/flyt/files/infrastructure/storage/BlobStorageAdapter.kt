@@ -1,6 +1,7 @@
 package no.novari.flyt.files.infrastructure.storage
 
 import no.novari.flyt.files.domain.DeletedFile
+import no.novari.flyt.files.domain.FileDownload
 import no.novari.flyt.files.domain.FilePayload
 import java.util.UUID
 
@@ -10,7 +11,7 @@ interface BlobStorageAdapter {
         file: FilePayload,
     ): UUID
 
-    fun downloadFile(fileId: UUID): FilePayload?
+    fun openDownload(fileId: UUID): FileDownload?
 
     fun deleteFilesByIds(fileIds: List<UUID>)
 

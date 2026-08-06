@@ -1,10 +1,13 @@
 package no.novari.flyt.files.infrastructure.storage.inmemory
 
 import no.novari.flyt.files.domain.DeletedFile
+import no.novari.flyt.files.domain.FileDownload
+import no.novari.flyt.files.domain.FileMetadata
 import no.novari.flyt.files.domain.FilePayload
 import no.novari.flyt.files.infrastructure.storage.BlobStorageAdapter
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.io.ByteArrayInputStream
 import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -22,13 +25,21 @@ class InMemoryBlobAdapter : BlobStorageAdapter {
         return fileId
     }
 
-    override fun downloadFile(fileId: UUID): FilePayload? {
-        val storedFile = files[fileId]
-        if (storedFile == null) {
-            return null
-        }
+    override fun openDownload(fileId: UUID): FileDownload? {
+        val storedFile = files[fileId] ?: return null
+        val payload = storedFile.payload
 
-        return copyPayload(storedFile.payload)
+        return FileDownload(
+            metadata =
+                FileMetadata(
+                    name = payload.name,
+                    sourceApplicationId = payload.sourceApplicationId,
+                    sourceApplicationInstanceId = payload.sourceApplicationInstanceId,
+                    type = payload.type,
+                    encoding = payload.encoding,
+                ),
+            contents = ByteArrayInputStream(payload.contents.copyOf()),
+        )
     }
 
     override fun deleteFilesByIds(fileIds: List<UUID>) {

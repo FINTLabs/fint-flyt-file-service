@@ -1,8 +1,8 @@
 package no.novari.flyt.files.application
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.novari.cache.FintCache
-import no.novari.cache.exceptions.NoSuchCacheEntryException
+import no.novari.flyt.files.domain.FileDownload
+import no.novari.flyt.files.domain.FileMetadata
 import no.novari.flyt.files.domain.FilePayload
 import no.novari.flyt.files.domain.exception.FileNotFoundException
 import no.novari.flyt.files.infrastructure.storage.FileRepository
@@ -12,31 +12,24 @@ import java.util.UUID
 
 @Service
 class FileService(
-    private val fileCache: FintCache<UUID, FilePayload>,
     private val fileRepository: FileRepository,
 ) {
     private val log = KotlinLogging.logger {}
 
-    fun findById(fileId: UUID): FilePayload {
-        val fileFromCache =
-            try {
-                fileCache.get(fileId)
-            } catch (_: NoSuchCacheEntryException) {
-                null
-            }
-        val fileFromStorage = fileFromCache ?: fileRepository.findById(fileId)
-        val normalizedFile = fileFromStorage?.let(::normalizeFileName) ?: throw FileNotFoundException(fileId)
+    fun openDownload(fileId: UUID): FileDownload {
+        val fileDownload = fileRepository.openDownload(fileId) ?: throw FileNotFoundException(fileId)
+        val normalizedMetadata = normalizeFileName(fileDownload.metadata)
 
         log.atDebug {
             message = "Resolved file metadata for fileId={} normalizedNameChanged={}"
             arguments =
                 arrayOf(
                     fileId,
-                    fileFromStorage.name != normalizedFile.name,
+                    fileDownload.metadata.name != normalizedMetadata.name,
                 )
         }
 
-        return normalizedFile
+        return FileDownload(normalizedMetadata, fileDownload.contents)
     }
 
     fun put(
@@ -54,14 +47,7 @@ class FileService(
                 )
         }
 
-        fileCache.put(fileId, normalizedFile)
-
-        return try {
-            fileRepository.putFile(fileId, normalizedFile)
-        } catch (exception: Exception) {
-            fileCache.remove(fileId)
-            throw exception
-        }
+        return fileRepository.putFile(fileId, normalizedFile)
     }
 
     fun delete(fileIds: List<UUID>) {
@@ -72,7 +58,6 @@ class FileService(
             return
         }
 
-        fileCache.remove(fileIds)
         fileRepository.deleteFiles(fileIds)
     }
 
@@ -80,19 +65,32 @@ class FileService(
         return fileRepository.deleteFilesOlderThan(days)
     }
 
-    private fun normalizeFileName(file: FilePayload): FilePayload {
-        val normalizedName =
-            file.name
-                .trim()
-                .replace(WHITESPACE_BEFORE_EXTENSION_REGEX, "$1")
-                .replace(TYPOGRAPHIC_DASHES_REGEX, "-")
-                .let { Normalizer.normalize(it, Normalizer.Form.NFC) }
+    private fun normalizeFileName(file: FileMetadata): FileMetadata {
+        val normalizedName = normalizeFileName(file.name)
 
         return if (normalizedName == file.name) {
             file
         } else {
             file.copy(name = normalizedName)
         }
+    }
+
+    private fun normalizeFileName(file: FilePayload): FilePayload {
+        val normalizedName = normalizeFileName(file.name)
+
+        return if (normalizedName == file.name) {
+            file
+        } else {
+            file.copy(name = normalizedName)
+        }
+    }
+
+    private fun normalizeFileName(fileName: String): String {
+        return fileName
+            .trim()
+            .replace(WHITESPACE_BEFORE_EXTENSION_REGEX, "$1")
+            .replace(TYPOGRAPHIC_DASHES_REGEX, "-")
+            .let { Normalizer.normalize(it, Normalizer.Form.NFC) }
     }
 
     companion object {
