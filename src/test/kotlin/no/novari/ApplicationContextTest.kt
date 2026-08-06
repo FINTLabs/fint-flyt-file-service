@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles
 @SpringBootTest(
     classes = [Application::class, ApplicationContextTest.KafkaListenerTestConfiguration::class],
     properties = [
+        "spring.kafka.admin.auto-create=false",
         "spring.kafka.listener.auto-startup=false",
     ],
 )
