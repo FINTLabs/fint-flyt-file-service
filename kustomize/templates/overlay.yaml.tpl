@@ -23,7 +23,7 @@ patches:
         path: "/spec/env/-"
         value:
          name: "novari.kafka.topic.orgId"
-         value: "$FINT_KAFKA_TOPIC_ORGID"
+         value: "$FINT_KAFKA_TOPIC_ORGID"$OTEL_ENV_PATCH
     target:
       kind: Application
       name: fint-flyt-file-service
