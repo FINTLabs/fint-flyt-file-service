@@ -40,8 +40,9 @@ dependencies {
     implementation("com.azure:azure-storage-blob:12.35.0")
 
     implementation("no.novari:flyt-cache:3.0.0")
-    implementation("no.novari:flyt-web-resource-server:4.0.0")
-    implementation("no.novari:flyt-kafka:7.2.0")
+    implementation("no.novari:flyt-web-resource-server:4.1.0-rc-2")
+    implementation("no.novari:flyt-kafka:7.3.0-rc-2")
+    implementation("no.novari:telemetry-starter:0.0.3")
 
     implementation("org.apache.commons:commons-text:1.15.0")
     implementation("org.apache.commons:commons-lang3:3.20.0")
