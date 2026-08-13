@@ -24,6 +24,11 @@ patches:
         value:
          name: "novari.kafka.topic.orgId"
          value: "trondelagfylke-no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+         name: "novari.telemetry.org-id"
+         value: "trondelagfylke.no"
     target:
       kind: Application
       name: fint-flyt-file-service

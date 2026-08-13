@@ -27,6 +27,11 @@ patches:
       - op: add
         path: "/spec/env/-"
         value:
+         name: "novari.telemetry.org-id"
+         value: "ofk.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
           name: "OTEL_EXPORTER_OTLP_ENDPOINT"
           value: "http://alloy.flais-system.svc.cluster.local:4318"
     target:
