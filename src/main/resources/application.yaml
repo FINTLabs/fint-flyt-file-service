@@ -19,6 +19,8 @@ server:
     max-http-form-post-size: ${novari.flyt.file-service.max-request-size}
 
 spring:
+  application:
+    name: ${fint.application-id}
   http:
     codecs:
       max-in-memory-size: ${novari.flyt.file-service.max-request-size}
