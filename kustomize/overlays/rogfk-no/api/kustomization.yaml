@@ -24,6 +24,11 @@ patches:
         value:
          name: "novari.kafka.topic.orgId"
          value: "rogfk-no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+         name: "novari.telemetry.org-id"
+         value: "rogfk.no"
     target:
       kind: Application
       name: fint-flyt-file-service

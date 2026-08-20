@@ -1,22 +1,8 @@
 <configuration scan="true">
 
-    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <providers>
-                <timestamp/>
-                <logLevel/>
-                <threadName/>
-                <loggerName/>
-                <message/>
-                <arguments/>
-                <throwableClassName/>
-                <throwableMessage/>
-                <stackTrace useShortFormat="true"/>
-            </providers>
-        </encoder>
-    </appender>
+    <include resource="no/novari/telemetry/logback-json.xml"/>
 
     <root level="INFO">
-        <appender-ref ref="JSON"/>
+        <appender-ref ref="TELEMETRY_JSON"/>
     </root>
 </configuration>
