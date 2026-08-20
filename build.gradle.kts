@@ -3,8 +3,8 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.ben-manes.versions") version "0.61.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
-    kotlin("jvm") version "2.4.0"
-    kotlin("plugin.spring") version "2.4.0"
+    kotlin("jvm") version "2.4.10"
+    kotlin("plugin.spring") version "2.4.10"
 }
 
 group = "no.novari"
@@ -39,7 +39,7 @@ dependencies {
     compileOnly("org.springframework.security:spring-security-web")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
+    implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.google.guava:guava:33.6.0-jre")
     implementation("com.azure:azure-storage-blob:12.35.0")
@@ -55,7 +55,7 @@ dependencies {
     runtimeOnly("net.logstash.logback:logstash-logback-encoder:9.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
 }
 
 tasks.test {
