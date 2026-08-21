@@ -37,7 +37,7 @@ dependencies {
         }
     }
 
-    implementation(platform("tools.jackson:jackson-bom:3.1.5"))
+    implementation(platform("tools.jackson:jackson-bom:3.2.2"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -47,7 +47,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("com.google.guava:guava:33.6.0-jre")
+    implementation("com.google.guava:guava:33.7.1-jre")
     implementation("com.azure:azure-storage-blob:12.35.0")
 
     implementation("no.novari:flyt-cache:3.0.0")
