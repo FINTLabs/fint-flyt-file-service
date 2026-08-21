@@ -5,6 +5,18 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE_DIR="$ROOT/kustomize/templates"
 BASE_TEMPLATE="$TEMPLATE_DIR/overlay.yaml.tpl"
 
+app_instance_suffix() {
+  local namespace="$1"
+  case "$namespace" in
+    bym-oslo-kommune-no)
+      printf '%s' "$namespace"
+      ;;
+    *)
+      printf '%s' "${namespace//-/_}"
+      ;;
+  esac
+}
+
 while IFS= read -r file; do
   rel="${file#"$ROOT/kustomize/overlays/"}"
   dir="$(dirname "$rel")"
@@ -19,7 +31,7 @@ while IFS= read -r file; do
   export ORG_ID="${namespace//-/.}"
   export APP_INSTANCE="fint-flyt-file-service_${namespace}"
   export KAFKA_TOPIC="${namespace}.flyt.*"
-  export BLOB_INSTANCE="fint-flyt-file-service-azure-blob-storage_${namespace//-/_}"
+  export BLOB_INSTANCE="fint-flyt-file-service-azure-blob-storage_$(app_instance_suffix "$namespace")"
   export FINT_KAFKA_TOPIC_ORGID="$namespace"
 
   target_dir="$ROOT/kustomize/overlays/$dir"
