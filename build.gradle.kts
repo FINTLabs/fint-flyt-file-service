@@ -26,9 +26,9 @@ repositories {
     mavenLocal()
 }
 
-extra["jackson-bom.version"] = "2.21.5"
-extra["log4j2.version"] = "2.25.5"
-extra["netty.version"] = "4.1.137.Final"
+extra["jackson-bom.version"] = "2.22.2"
+extra["log4j2.version"] = "2.26.1"
+extra["netty.version"] = "4.2.17.Final"
 
 dependencies {
     constraints {
