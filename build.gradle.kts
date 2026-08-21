@@ -32,7 +32,7 @@ extra["netty.version"] = "4.1.137.Final"
 
 dependencies {
     constraints {
-        implementation("at.yawk.lz4:lz4-java:1.11.1") {
+        implementation("at.yawk.lz4:lz4-java:1.11.2") {
             because("Fixes CVE-2026-59949 in the kafka-clients transitive dependency")
         }
     }
