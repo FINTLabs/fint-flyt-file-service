@@ -48,7 +48,7 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.google.guava:guava:33.7.1-jre")
-    implementation("com.azure:azure-storage-blob:12.35.0")
+    implementation("com.azure:azure-storage-blob:12.35.1")
 
     implementation("no.novari:flyt-cache:3.0.0")
     implementation("no.novari:flyt-web-resource-server:4.0.0")
