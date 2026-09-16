@@ -36,8 +36,16 @@ while IFS= read -r file; do
 
   target_dir="$ROOT/kustomize/overlays/$dir"
   template="$BASE_TEMPLATE"
+  mkdir -p "$target_dir"
 
   tmp="$(mktemp)"
   envsubst < "$template" > "$tmp"
   mv "$tmp" "$target_dir/kustomization.yaml"
-done < <(find "$ROOT/kustomize/overlays" -name kustomization.yaml -print | sort)
+done < <(
+  {
+    find "$ROOT/kustomize/overlays" -name kustomization.yaml -print
+    printf '%s\n' \
+      "$ROOT/kustomize/overlays/ra-no/beta/kustomization.yaml" \
+      "$ROOT/kustomize/overlays/ra-no/api/kustomization.yaml"
+  } | sort -u
+)
