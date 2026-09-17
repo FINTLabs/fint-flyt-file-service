@@ -27,7 +27,7 @@ patches:
       - op: add
         path: "/spec/env/-"
         value:
-            name: "fint.flyt.file.sso.client-id"
+            name: "fint-flyt-file-oauth2-client"
             valueFrom:
                 secretKeyRef:
                     name: fint.flyt.file.sso.client-id
