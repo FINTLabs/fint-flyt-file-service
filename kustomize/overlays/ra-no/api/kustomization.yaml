@@ -24,14 +24,6 @@ patches:
         value:
          name: "novari.kafka.topic.orgId"
          value: "ra-no"
-      - op: add
-        path: "/spec/env/-"
-        value:
-            name: "fint-flyt-file-oauth2-client"
-            valueFrom:
-                secretKeyRef:
-                    name: fint.flyt.file.sso.client-id
-                    key: fint.flyt.file.sso.client-id
     target:
       kind: Application
       name: fint-flyt-file-service
