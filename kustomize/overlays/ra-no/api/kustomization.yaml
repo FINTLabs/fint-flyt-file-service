@@ -4,6 +4,7 @@ namespace: ra-no
 
 resources:
   - ../../../base
+  - file-client-onepassword.yaml
 
 patches:
   - patch: |-
