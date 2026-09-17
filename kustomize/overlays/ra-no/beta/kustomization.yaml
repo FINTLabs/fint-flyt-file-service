@@ -4,6 +4,7 @@ namespace: ra-no
 
 resources:
   - ../../../base
+  - file-client-onepassword.yaml
 
 patches:
   - patch: |-
@@ -24,6 +25,14 @@ patches:
         value:
          name: "novari.kafka.topic.orgId"
          value: "ra-no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+            name: "fint.flyt.file.sso.client-id"
+            valueFrom:
+                secretKeyRef:
+                    name: fint.flyt.file.sso.client-id
+                    key: fint.flyt.file.sso.client-id
     target:
       kind: Application
       name: fint-flyt-file-service
