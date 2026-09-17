@@ -1,0 +1,41 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ra-no
+
+resources:
+  - ../../../base
+  - file-client-onepassword.yaml
+
+patches:
+  - patch: |-
+      - op: replace
+        path: "/metadata/labels/app.kubernetes.io~1instance"
+        value: "fint-flyt-file-service_ra-no"
+      - op: replace
+        path: "/metadata/labels/fintlabs.no~1org-id"
+        value: "ra.no"
+      - op: replace
+        path: "/spec/kafka/acls/0/topic"
+        value: "ra-no.flyt.*"
+      - op: replace
+        path: "/spec/orgId"
+        value: "ra.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+         name: "novari.kafka.topic.orgId"
+         value: "ra-no"
+    target:
+      kind: Application
+      name: fint-flyt-file-service
+
+  - patch: |-
+      - op: replace
+        path: "/metadata/labels/app.kubernetes.io~1instance"
+        value: "fint-flyt-file-service-azure-blob-storage_ra_no"
+      - op: replace
+        path: "/metadata/labels/fintlabs.no~1org-id"
+        value: "ra.no"
+    target:
+      kind: AzureBlobContainer
+      name: fint-flyt-file-service-azure-blob-storage
