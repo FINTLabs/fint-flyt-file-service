@@ -151,7 +151,7 @@ Forutsetninger:
 
 - Java 25+
 - Gradle wrapper (`./gradlew`)
-- Docker. `docker compose up -d` starter Kafka på `localhost:9092`, som Kafka-relaterte beans trenger. Legg til `--profile tools` for å også starte Kafdrop på http://localhost:19000. `docker compose down -v` stopper alt og sletter dataene.
+- Docker. `docker compose up -d` starter Kafka på `localhost:9092`, som Kafka-relaterte beans trenger. Legg til `--profile tools` for å også starte Kafdrop på http://localhost:19000. Topicene er tomme ved hver oppstart.
 
 Kommandoer:
 
