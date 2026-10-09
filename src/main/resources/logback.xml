@@ -10,9 +10,16 @@
                 <message/>
                 <arguments/>
                 <mdc/>
+                <keyValuePairs/>
                 <throwableClassName/>
                 <throwableMessage/>
-                <stackTrace useShortFormat="true"/>
+                <stackTrace>
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                        <shortenedClassNameLength>20</shortenedClassNameLength>
+                        <rootCauseFirst>true</rootCauseFirst>
+                    </throwableConverter>
+                </stackTrace>
             </providers>
         </encoder>
     </appender>
