@@ -1,4 +1,5 @@
 buildscript {
+    configurations.classpath { resolutionStrategy.activateDependencyLocking() }
     repositories {
         gradlePluginPortal()
     }
@@ -46,6 +47,10 @@ extra["jackson-bom.version"] = "2.22.4"
 extra["log4j2.version"] = "2.26.1"
 extra["netty.version"] = "4.2.17.Final"
 extra["tomcat.version"] = "10.1.59"
+
+dependencyLocking {
+    lockAllConfigurations()
+}
 
 dependencies {
     constraints {
