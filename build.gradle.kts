@@ -75,9 +75,9 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.azure:azure-storage-blob:12.36.0")
 
-    implementation("no.novari:flyt-cache:3.0.0")
-    implementation("no.novari:flyt-web-resource-server:4.1.0")
-    implementation("no.novari:flyt-kafka:7.4.0")
+    implementation("no.novari:flyt-cache:3.0.1")
+    implementation("no.novari:flyt-web-resource-server:4.1.1")
+    implementation("no.novari:flyt-kafka:7.4.1")
 
     implementation("org.apache.commons:commons-text:1.15.0")
 
