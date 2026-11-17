@@ -1,6 +1,5 @@
 package no.novari
 
-import no.novari.flyt.webresourceserver.security.client.sourceapplication.SourceApplicationAuthorizationRequestService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.boot.test.context.SpringBootTest
@@ -8,7 +7,6 @@ import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.kafka.listener.AbstractMessageListenerContainer
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 @SpringBootTest(
     classes = [Application::class, ApplicationContextTest.KafkaListenerTestConfiguration::class],
@@ -18,7 +16,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     ],
 )
 @ActiveProfiles("local-staging")
-@MockitoBean(types = [SourceApplicationAuthorizationRequestService::class])
 class ApplicationContextTest {
     @Test
     fun contextLoads() {
