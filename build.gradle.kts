@@ -1,25 +1,24 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 buildscript {
     repositories {
         gradlePluginPortal()
     }
     dependencies {
-        classpath(platform("com.fasterxml.jackson:jackson-bom:2.23.0"))
         constraints {
-            classpath("org.apache.httpcomponents.client5:httpclient5:5.6.5")
-            classpath("org.apache.httpcomponents.core5:httpcore5:5.5")
-            classpath("org.apache.httpcomponents.core5:httpcore5-h2:5.5")
-            classpath("org.apache.commons:commons-lang3:3.22.0")
+            classpath("org.apache.commons:commons-lang3:3.22.0") {
+                because("Fixes CVE-2025-48924 in spring-boot-buildpack-platform")
+            }
         }
     }
 }
 
 plugins {
-    id("org.springframework.boot") version "3.5.16"
-    id("io.spring.dependency-management") version "1.1.7"
+    id("org.springframework.boot") version "4.2.0"
     id("io.github.ben-manes.versions") version "0.67.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
-    kotlin("jvm") version "2.4.10"
-    kotlin("plugin.spring") version "2.4.10"
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.spring") version "2.4.21"
 }
 
 group = "no.novari"
@@ -46,46 +45,33 @@ repositories {
     mavenLocal()
 }
 
-extra["commons-lang3.version"] = "3.21.0"
-extra["jackson-bom.version"] = "2.22.4"
-extra["log4j2.version"] = "2.26.1"
-extra["netty.version"] = "4.2.17.Final"
-extra["tomcat.version"] = "10.1.59"
-
 dependencyLocking {
     lockAllConfigurations()
 }
 
 dependencies {
-    constraints {
-        implementation("at.yawk.lz4:lz4-java:1.14.1") {
-            because("Fixes CVE-2026-59949 in the kafka-clients transitive dependency")
-        }
-        implementation("org.xerial.snappy:snappy-java:1.1.10.12") {
-            because("Fixes CVE-2026-93451, CVE-2026-108106 and CVE-2026-116590 in kafka-clients")
-        }
-    }
-
+    // A platform instead of the dependency-management plugin, which puts Boot's Kotlin on ktlint's classpath.
+    implementation(platform(SpringBootPlugin.BOM_COORDINATES))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.7")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("com.azure:azure-storage-blob:12.37.2")
 
-    implementation("no.novari:flyt-cache:3.0.1")
-    implementation("no.novari:flyt-web-resource-server:5.0.0")
-    implementation("no.novari:flyt-kafka:7.4.1")
+    implementation("no.novari:flyt-security-starter:1.0.0-rc-3")
+    implementation("no.novari:flyt-kafka:8.0.0-rc-7")
 
     implementation("org.apache.commons:commons-text:1.15.0")
 
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
-    // Pinned to 8.x: 9.x pulls in Jackson 3 (tools.jackson), while Spring Boot 3.5 uses Jackson 2
-    runtimeOnly("net.logstash.logback:logstash-logback-encoder:8.1")
+    runtimeOnly("net.logstash.logback:logstash-logback-encoder:9.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.4.0")
 }
 

@@ -1,6 +1,5 @@
 package no.novari.flyt.files.api
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.novari.flyt.files.application.FileService
 import no.novari.flyt.files.domain.FileDownload
 import no.novari.flyt.files.domain.FileMetadata
@@ -14,7 +13,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch
@@ -25,11 +24,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.request
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import tools.jackson.module.kotlin.jsonMapper
+import tools.jackson.module.kotlin.kotlinModule
 import java.io.ByteArrayInputStream
 import java.util.UUID
 
 class FileControllerTest {
-    private val objectMapper = jacksonObjectMapper()
+    private val objectMapper = jsonMapper { addModule(kotlinModule()) }
     private lateinit var fileService: FileService
     private lateinit var mockMvc: MockMvc
 
@@ -39,7 +40,7 @@ class FileControllerTest {
         mockMvc =
             MockMvcBuilders
                 .standaloneSetup(FileController(fileService, objectMapper))
-                .setMessageConverters(MappingJackson2HttpMessageConverter(objectMapper))
+                .setMessageConverters(JacksonJsonHttpMessageConverter(objectMapper))
                 .build()
     }
 

@@ -3,6 +3,9 @@ novari:
     topic:
       domain-context: flyt
     application-id: ${fint.application-id}
+    consumer:
+      # Stop at startup if a listener would get another consumer group than with fint-kafka 6.
+      group-id-check: FAIL
 
 spring:
   kafka:

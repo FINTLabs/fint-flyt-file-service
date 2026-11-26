@@ -107,13 +107,13 @@ nødvendige lokalt.
 
 ## Sikkerhet
 
-Prosjektet bruker `flyt-web-resource-server`.
+Prosjektet bruker `flyt-security-starter`. API-et ligger under `/api/intern-klient/filer`, og bare klientene i
+`novari.flyt.security.internal-client.authorized-client-ids` slipper til.
 
 Standardprofiler i `application.yaml`:
 
 - `flyt-kafka`
 - `flyt-logging`
-- `flyt-web-resource-server`
 
 Lokal bypass av auth/JWT krever **to** betingelser:
 
@@ -121,12 +121,6 @@ Lokal bypass av auth/JWT krever **to** betingelser:
 2. Egenskapen `novari.flyt.file-service.local-security.permit-all-enabled=true`
 
 Dette styres i `LocalPermitAllSecurityConfiguration`.
-
-Følgende er også satt i `application-local-staging.yaml`:
-
-- `novari.flyt.web-resource-server.security.api.internal.enabled=false`
-- `novari.flyt.web-resource-server.security.api.internal-client.enabled=false`
-- `novari.flyt.web-resource-server.security.api.external.enabled=false`
 
 ## Logging og observabilitet
 
@@ -143,7 +137,7 @@ Følgende er også satt i `application-local-staging.yaml`:
 | `fint.azure.storage-account.connection-string` | Azure connection string (ikke påkrevd i `local-staging`). |
 | `fint.azure.storage.container-blob.name` | Navn på Azure-container (ikke påkrevd i `local-staging`). |
 | `novari.flyt.file-service.local-security.permit-all-enabled` | Lokal `permitAll` når `local-staging` er aktiv. |
-| `novari.flyt.web-resource-server.security.api.internal-client.authorized-client-ids` | Autoriserte interne klient-ID-er. |
+| `novari.flyt.security.internal-client.authorized-client-ids` | Autoriserte interne klient-ID-er (`${fint.sso.client-id}`, file-service sin egen klient). |
 
 ## Lokal kjøring
 
