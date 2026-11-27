@@ -15,6 +15,8 @@ jobber og Kafka-hendelser.
 
 ## Arkitektur
 
+C4-diagrammer: [docs/architecture.md](docs/architecture.md).
+
 | Komponent | Ansvar |
 | --- | --- |
 | `FileController` | Endepunkter for `POST` og `GET` av filer. |
