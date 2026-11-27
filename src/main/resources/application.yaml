@@ -5,11 +5,10 @@ novari:
   flyt:
     file-service:
       max-request-size: 1024MB
-    web-resource-server:
-      security:
-        api:
-          internal-client:
-            authorized-client-ids: ${fint.sso.client-id}
+    security:
+      internal-client:
+        # Other FLYT services call file-service with its own client (fint-flyt-file-oauth2-client).
+        authorized-client-ids: ${fint.sso.client-id}
 
 server:
   error:
@@ -29,7 +28,6 @@ spring:
     include:
       - flyt-kafka
       - flyt-logging
-      - flyt-web-resource-server
   servlet:
     multipart:
       max-file-size: ${novari.flyt.file-service.max-request-size}

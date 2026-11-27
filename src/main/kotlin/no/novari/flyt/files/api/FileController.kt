@@ -1,13 +1,10 @@
 package no.novari.flyt.files.api
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
 import jakarta.validation.Valid
 import no.novari.flyt.files.application.FileService
 import no.novari.flyt.files.domain.FileDownload
 import no.novari.flyt.files.domain.FilePayload
-import no.novari.flyt.webresourceserver.UrlPaths.INTERNAL_CLIENT_API
+import no.novari.flyt.security.UrlPaths.INTERNAL_CLIENT_API
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -24,6 +21,9 @@ import org.springframework.web.context.request.async.CallableProcessingIntercept
 import org.springframework.web.context.request.async.WebAsyncUtils
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
+import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.node.ObjectNode
 import java.util.UUID
 import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicBoolean
@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 @RequestMapping("$INTERNAL_CLIENT_API/filer")
 class FileController(
     private val fileService: FileService,
-    private val objectMapper: ObjectMapper,
+    private val jsonMapper: JsonMapper,
 ) {
     @GetMapping("{fileId}", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun get(
@@ -54,7 +54,7 @@ class FileController(
             .body(
                 StreamingResponseBody { outputStream ->
                     try {
-                        objectMapper.factory.createGenerator(outputStream).use { generator ->
+                        jsonMapper.createGenerator(outputStream).use { generator ->
                             writeFileDownload(generator, fileDownload)
                         }
                     } finally {
@@ -90,12 +90,12 @@ class FileController(
         val metadata = fileDownload.metadata
 
         generator.writeStartObject()
-        val metadataFields = objectMapper.valueToTree<ObjectNode>(metadata).properties()
+        val metadataFields = jsonMapper.valueToTree<ObjectNode>(metadata).properties()
         for (field in metadataFields) {
-            generator.writeFieldName(field.key)
+            generator.writeName(field.key)
             generator.writeTree(field.value)
         }
-        generator.writeFieldName("contents")
+        generator.writeName("contents")
         generator.writeBinary(fileDownload.contents, -1)
         generator.writeEndObject()
     }
@@ -110,7 +110,7 @@ class FileController(
             .registerCallableInterceptor(
                 "fileDownload-$fileId",
                 object : CallableProcessingInterceptor {
-                    override fun <T> handleTimeout(
+                    override fun <T : Any> handleTimeout(
                         request: NativeWebRequest,
                         task: Callable<T>,
                     ): Any {
@@ -118,7 +118,7 @@ class FileController(
                         return CallableProcessingInterceptor.RESULT_NONE
                     }
 
-                    override fun <T> handleError(
+                    override fun <T : Any> handleError(
                         request: NativeWebRequest,
                         task: Callable<T>,
                         throwable: Throwable,
@@ -127,7 +127,7 @@ class FileController(
                         return CallableProcessingInterceptor.RESULT_NONE
                     }
 
-                    override fun <T> afterCompletion(
+                    override fun <T : Any> afterCompletion(
                         request: NativeWebRequest,
                         task: Callable<T>,
                     ) {

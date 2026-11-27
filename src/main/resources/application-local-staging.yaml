@@ -8,19 +8,9 @@ novari:
       local-security:
         permit-all-enabled: true
 
-    web-resource-server:
-      security:
-        api:
-          internal:
-            enabled: false
-          internal-client:
-            enabled: false
-          external:
-            enabled: false
-
   kafka:
-    default-replicas: 1
     topic:
+      default-replicas: 1
       org-id: novari-no
 
 spring:

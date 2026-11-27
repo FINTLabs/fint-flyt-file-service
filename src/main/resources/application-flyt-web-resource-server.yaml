@@ -1,7 +1,0 @@
-novari:
-  flyt:
-    web-resource-server:
-      security:
-        api:
-          internal-client:
-            enabled: true
