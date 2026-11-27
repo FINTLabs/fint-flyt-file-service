@@ -31,7 +31,7 @@ class ApplicationContextTest {
                     beanName: String,
                 ): Any {
                     if (bean is AbstractMessageListenerContainer<*, *>) {
-                        bean.setAutoStartup(false)
+                        bean.isAutoStartup = false
                     }
 
                     return bean
